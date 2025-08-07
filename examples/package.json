@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^5.11.0"
+  },
+  "devDependencies": {
+    "vite-plugin-elm": "^3.0.1"
+  }
+}
