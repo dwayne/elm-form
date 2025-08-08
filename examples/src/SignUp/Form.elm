@@ -11,6 +11,7 @@ import Field.Advanced as Field exposing (Field, Validation)
 import Form
 import SignUp.Email as Email exposing (Email)
 import SignUp.Password as Password exposing (Password)
+import SignUp.PasswordConfirmation as PasswordConfirmation exposing (PasswordConfirmation)
 import SignUp.Username as Username exposing (Username)
 
 
@@ -26,6 +27,7 @@ type alias Fields =
     { username : Field Username.Error Username
     , email : Field Email.Error Email
     , password : Field Password.Error Password
+    , passwordConfirmation : Field PasswordConfirmation.Error PasswordConfirmation
     }
 
 
@@ -33,6 +35,7 @@ type alias Setters =
     { setUsername : String -> Fields -> Fields
     , setEmail : String -> Fields -> Fields
     , setPassword : String -> Fields -> Fields
+    , setPasswordConfirmation : String -> Fields -> Fields
     }
 
 
@@ -40,6 +43,7 @@ type Error
     = UsernameError Username.Error
     | EmailError Email.Error
     | PasswordError Password.Error
+    | PasswordConfirmationError PasswordConfirmation.Error
 
 
 type alias Output =
@@ -58,6 +62,7 @@ form =
         { username = Field.empty Username.fieldType
         , email = Field.empty Email.fieldType
         , password = Field.empty Password.fieldType
+        , passwordConfirmation = Field.empty PasswordConfirmation.fieldType
         }
 
 
@@ -76,6 +81,9 @@ setters =
     , setPassword =
         \s fields ->
             { fields | password = Field.setFromString s fields.password }
+    , setPasswordConfirmation =
+        \s fields ->
+            { fields | passwordConfirmation = Field.setFromString s fields.passwordConfirmation }
     }
 
 
@@ -85,10 +93,11 @@ setters =
 
 validate : Fields -> Validation Error Output
 validate fields =
-    (\username email password ->
+    (\username email password _ ->
         Output username email password
     )
         |> Field.succeed
         |> Field.applyValidation (fields.username |> Field.mapError UsernameError)
         |> Field.applyValidation (fields.email |> Field.mapError EmailError)
         |> Field.applyValidation (fields.password |> Field.mapError PasswordError)
+        |> Field.applyValidation (fields.passwordConfirmation |> Field.mapError PasswordConfirmationError)

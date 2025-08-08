@@ -43,6 +43,14 @@ suite =
                         |> Field.toRawString
                         |> String.isEmpty
                         |> Expect.equal True
+            , test "password confirmation is empty" <|
+                \_ ->
+                    SignUp.form
+                        |> Form.toFields
+                        |> .passwordConfirmation
+                        |> Field.toRawString
+                        |> String.isEmpty
+                        |> Expect.equal True
             ]
         , describe "with valid data" <|
             let
@@ -51,6 +59,7 @@ suite =
                         |> Form.update .setUsername "freddy"
                         |> Form.update .setEmail "freddy.mercury@queen.com"
                         |> Form.update .setPassword "12345678aB!"
+                        |> Form.update .setPasswordConfirmation "12345678"
             in
             [ test "it is valid" <|
                 \_ ->
