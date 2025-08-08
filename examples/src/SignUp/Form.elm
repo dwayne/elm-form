@@ -80,7 +80,23 @@ setters =
             { fields | email = Field.setFromString s fields.email }
     , setPassword =
         \s fields ->
-            { fields | password = Field.setFromString s fields.password }
+            let
+                password =
+                    Field.setFromString s fields.password
+
+                maybeIsMatching =
+                    (\p pc ->
+                        Password.toString p == PasswordConfirmation.toString pc
+                    )
+                        |> Just
+                        |> Field.applyMaybe password
+                        |> Field.applyMaybe fields.passwordConfirmation
+            in
+            if maybeIsMatching == Just False then
+                { fields | password = password, passwordConfirmation = Field.setCustomError PasswordConfirmation.Mismatch fields.passwordConfirmation }
+
+            else
+                { fields | password = password }
     , setPasswordConfirmation =
         \s fields ->
             let

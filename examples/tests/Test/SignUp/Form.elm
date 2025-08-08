@@ -85,4 +85,20 @@ suite =
                                 }
                             )
             ]
+        , describe "when the password is changed after matching the password confirmation" <|
+            let
+                invalidForm =
+                    SignUp.form
+                        |> Form.update .setUsername "freddy"
+                        |> Form.update .setEmail "freddy.mercury@queen.com"
+                        |> Form.update .setPassword "12345678aB!"
+                        |> Form.update .setPasswordConfirmation "12345678aB!"
+                        |> Form.update .setPassword "12345678aB!x"
+            in
+            [ test "it is invalid" <|
+                \_ ->
+                    invalidForm
+                        |> Form.isInvalid
+                        |> Expect.equal True
+            ]
         ]
