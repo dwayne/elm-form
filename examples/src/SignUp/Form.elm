@@ -10,6 +10,7 @@ module SignUp.Form exposing
 import Field.Advanced as Field exposing (Field, Validation)
 import Form
 import SignUp.Email as Email exposing (Email)
+import SignUp.Password as Password exposing (Password)
 import SignUp.Username as Username exposing (Username)
 
 
@@ -24,23 +25,27 @@ type alias Form =
 type alias Fields =
     { username : Field Username.Error Username
     , email : Field Email.Error Email
+    , password : Field Password.Error Password
     }
 
 
 type alias Setters =
     { setUsername : String -> Fields -> Fields
     , setEmail : String -> Fields -> Fields
+    , setPassword : String -> Fields -> Fields
     }
 
 
 type Error
     = UsernameError Username.Error
     | EmailError Email.Error
+    | PasswordError Password.Error
 
 
 type alias Output =
     { username : Username
     , email : Email
+    , password : Password
     }
 
 
@@ -52,6 +57,7 @@ form =
         }
         { username = Field.empty Username.fieldType
         , email = Field.empty Email.fieldType
+        , password = Field.empty Password.fieldType
         }
 
 
@@ -67,6 +73,9 @@ setters =
     , setEmail =
         \s fields ->
             { fields | email = Field.setFromString s fields.email }
+    , setPassword =
+        \s fields ->
+            { fields | password = Field.setFromString s fields.password }
     }
 
 
@@ -76,9 +85,10 @@ setters =
 
 validate : Fields -> Validation Error Output
 validate fields =
-    (\username ->
-        Output username
+    (\username email password ->
+        Output username email password
     )
         |> Field.succeed
         |> Field.applyValidation (fields.username |> Field.mapError UsernameError)
         |> Field.applyValidation (fields.email |> Field.mapError EmailError)
+        |> Field.applyValidation (fields.password |> Field.mapError PasswordError)

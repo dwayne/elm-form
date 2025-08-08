@@ -5,6 +5,7 @@ import Field.Advanced as Field
 import Form
 import SignUp.Email as Email
 import SignUp.Form as SignUp
+import SignUp.Password as Password
 import SignUp.Username as Username
 import Test exposing (Test, describe, test)
 
@@ -34,6 +35,14 @@ suite =
                         |> Field.toRawString
                         |> String.isEmpty
                         |> Expect.equal True
+            , test "password is empty" <|
+                \_ ->
+                    SignUp.form
+                        |> Form.toFields
+                        |> .password
+                        |> Field.toRawString
+                        |> String.isEmpty
+                        |> Expect.equal True
             ]
         , describe "with valid data" <|
             let
@@ -41,6 +50,7 @@ suite =
                     SignUp.form
                         |> Form.update .setUsername "freddy"
                         |> Form.update .setEmail "freddy.mercury@queen.com"
+                        |> Form.update .setPassword "12345678aB!"
             in
             [ test "it is valid" <|
                 \_ ->
@@ -52,15 +62,17 @@ suite =
                     validForm
                         |> Form.validateAsMaybe
                         |> Maybe.map
-                            (\{ username, email } ->
+                            (\{ username, email, password } ->
                                 { username = Username.toString username
                                 , email = Email.toString email
+                                , password = Password.toString password
                                 }
                             )
                         |> Expect.equal
                             (Just
                                 { username = "freddy"
                                 , email = "freddy.mercury@queen.com"
+                                , password = "12345678aB!"
                                 }
                             )
             ]
