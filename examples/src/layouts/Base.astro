@@ -1,0 +1,18 @@
+---
+const { title = "dwayne/elm-form Examples", subtitle = "" } = Astro.props;
+const fullTitle = subtitle === "" ? title : subtitle + " - " + title;
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1">
+
+    <title>{fullTitle}</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  </head>
+  <body>
+    <slot></slot>
+  </body>
+</html>

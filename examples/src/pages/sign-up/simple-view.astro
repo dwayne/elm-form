@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/Base.astro";
+---
+<BaseLayout subtitle="SignUp Simple View">
+  <div id="SignUp.SimpleView"></div>
+  <script>
+    import { Elm } from "@/SignUp/SimpleView.elm";
+
+    Elm.SignUp.SimpleView.init({
+      node: document.getElementById("SignUp.SimpleView")
+    });
+  </script>
+</BaseLayout>

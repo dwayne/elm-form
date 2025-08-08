@@ -35,7 +35,7 @@ fromString =
                 Err (F.customError <| TooShort { actual = n, min = 3 })
 
             else if n > 25 then
-                Err (F.customError <| TooLong { actual = n, max = 3 })
+                Err (F.customError <| TooLong { actual = n, max = 25 })
 
             else
                 Ok (Username s)
