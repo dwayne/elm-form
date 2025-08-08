@@ -83,40 +83,34 @@ setters =
             let
                 password =
                     Field.setFromString s fields.password
-
-                maybeIsMatching =
-                    (\p pc ->
-                        Password.toString p == PasswordConfirmation.toString pc
-                    )
-                        |> Just
-                        |> Field.applyMaybe password
-                        |> Field.applyMaybe fields.passwordConfirmation
             in
-            if maybeIsMatching == Just False then
-                { fields | password = password, passwordConfirmation = Field.setCustomError PasswordConfirmation.Mismatch fields.passwordConfirmation }
-
-            else
-                { fields | password = password }
+            { fields | password = password, passwordConfirmation = updatePasswordConfirmation password fields.passwordConfirmation }
     , setPasswordConfirmation =
         \s fields ->
             let
                 passwordConfirmation =
                     Field.setFromString s fields.passwordConfirmation
-
-                maybeIsMatching =
-                    (\p pc ->
-                        Password.toString p == PasswordConfirmation.toString pc
-                    )
-                        |> Just
-                        |> Field.applyMaybe fields.password
-                        |> Field.applyMaybe passwordConfirmation
             in
-            if maybeIsMatching == Just False then
-                { fields | passwordConfirmation = Field.setCustomError PasswordConfirmation.Mismatch passwordConfirmation }
-
-            else
-                { fields | passwordConfirmation = passwordConfirmation }
+            { fields | passwordConfirmation = updatePasswordConfirmation fields.password passwordConfirmation }
     }
+
+
+updatePasswordConfirmation :
+    Field Password.Error Password
+    -> Field PasswordConfirmation.Error PasswordConfirmation
+    -> Field PasswordConfirmation.Error PasswordConfirmation
+updatePasswordConfirmation password passwordConfirmation =
+    (\p pc ->
+        if Password.toString p == PasswordConfirmation.toString pc then
+            passwordConfirmation
+
+        else
+            Field.setCustomError PasswordConfirmation.Mismatch passwordConfirmation
+    )
+        |> Just
+        |> Field.applyMaybe password
+        |> Field.applyMaybe passwordConfirmation
+        |> Maybe.withDefault passwordConfirmation
 
 
 
