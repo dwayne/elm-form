@@ -59,7 +59,7 @@ suite =
                         |> Form.update .setUsername "freddy"
                         |> Form.update .setEmail "freddy.mercury@queen.com"
                         |> Form.update .setPassword "12345678aB!"
-                        |> Form.update .setPasswordConfirmation "12345678"
+                        |> Form.update .setPasswordConfirmation "12345678aB!"
             in
             [ test "it is valid" <|
                 \_ ->
