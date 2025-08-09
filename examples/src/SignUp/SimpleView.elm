@@ -6,6 +6,7 @@ import Form
 import Html as H
 import Html.Attributes as HA
 import Html.Events as HE
+import Lib.Browser.Dom as BD
 import Lib.Bulma.Field
 import SignUp.Email as Email
 import SignUp.Error as Error
@@ -17,10 +18,11 @@ import SignUp.Username as Username
 
 main : Program () Model Msg
 main =
-    B.sandbox
+    B.element
         { init = init
         , view = view
         , update = update
+        , subscriptions = always Sub.none
         }
 
 
@@ -34,11 +36,13 @@ type alias Model =
     }
 
 
-init : Model
-init =
-    { signUp = SignUp.form
-    , maybeOutput = Nothing
-    }
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { signUp = SignUp.form
+      , maybeOutput = Nothing
+      }
+    , focusUsername
+    )
 
 
 
@@ -46,30 +50,49 @@ init =
 
 
 type Msg
-    = InputUsername String
+    = Focus
+    | InputUsername String
     | InputEmail String
     | InputPassword String
     | InputPasswordConfirmation String
     | Submit
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Focus ->
+            ( model, Cmd.none )
+
         InputUsername s ->
-            { model | signUp = Form.update .setUsername s model.signUp }
+            ( { model | signUp = Form.update .setUsername s model.signUp }
+            , Cmd.none
+            )
 
         InputEmail s ->
-            { model | signUp = Form.update .setEmail s model.signUp }
+            ( { model | signUp = Form.update .setEmail s model.signUp }
+            , Cmd.none
+            )
 
         InputPassword s ->
-            { model | signUp = Form.update .setPassword s model.signUp }
+            ( { model | signUp = Form.update .setPassword s model.signUp }
+            , Cmd.none
+            )
 
         InputPasswordConfirmation s ->
-            { model | signUp = Form.update .setPasswordConfirmation s model.signUp }
+            ( { model | signUp = Form.update .setPasswordConfirmation s model.signUp }
+            , Cmd.none
+            )
 
         Submit ->
-            { model | signUp = SignUp.form, maybeOutput = Form.validateAsMaybe model.signUp }
+            ( { model | signUp = SignUp.form, maybeOutput = Form.validateAsMaybe model.signUp }
+            , focusUsername
+            )
+
+
+focusUsername : Cmd Msg
+focusUsername =
+    BD.focus "username" Focus
 
 
 
