@@ -8,8 +8,10 @@ import Html.Attributes as HA
 import Html.Events as HE
 import Lib.Bulma.Field
 import SignUp.Email as Email
+import SignUp.Error as Error
 import SignUp.Form as SignUp
 import SignUp.Password as Password
+import SignUp.PasswordConfirmation as PasswordConfirmation
 import SignUp.Username as Username
 
 
@@ -67,7 +69,7 @@ update msg model =
             { model | signUp = Form.update .setPasswordConfirmation s model.signUp }
 
         Submit ->
-            { model | maybeOutput = Form.validateAsMaybe model.signUp }
+            { model | signUp = SignUp.form, maybeOutput = Form.validateAsMaybe model.signUp }
 
 
 
@@ -80,10 +82,11 @@ view { signUp, maybeOutput } =
         fields =
             Form.toFields signUp
     in
-    H.div []
-        [ H.h2 [] [ H.text "Sign Up" ]
+    viewCenter
+        [ H.h1 [ HA.class "title is-1" ] [ H.text "Sign Up" ]
         , H.form
-            [ HA.novalidate True
+            [ HA.class "block"
+            , HA.novalidate True
             , HE.onSubmit Submit
             ]
             [ Lib.Bulma.Field.view
@@ -91,46 +94,45 @@ view { signUp, maybeOutput } =
                 , label = "Username"
                 , tipe = Lib.Bulma.Field.Text
                 , field = fields.username
-                , errorToString = usernameErrorToString
+                , errorToString = Error.usernameErrorToString
                 , isRequired = True
                 , isDisabled = False
                 , inputAttrs = [ HA.autofocus True ]
                 , onInput = InputUsername
                 }
-
-            --, Lib.Bulma.Field.view
-            --    { id = "email"
-            --    , label = "Email"
-            --    , tipe = "text"
-            --    , field = fields.email
-            --    , errorToString = Email.errorToString
-            --    , isRequired = True
-            --    , isDisabled = False
-            --    , inputAttrs = []
-            --    , onInput = InputUsername
-            --    }
-            --, Lib.Bulma.Field.view
-            --    { id = "password"
-            --    , label = "Password"
-            --    , tipe = "password"
-            --    , field = fields.password
-            --    , errorToString = Password.errorToString
-            --    , isRequired = True
-            --    , isDisabled = False
-            --    , inputAttrs = []
-            --    , onInput = InputPassword
-            --    }
-            --, Lib.Bulma.Field.view
-            --    { id = "passwordConfirmation"
-            --    , label = "Password Confirmation"
-            --    , tipe = "password"
-            --    , field = fields.passwordConfirmation
-            --    , errorToString = PasswordConfirmation.errorToString
-            --    , isRequired = True
-            --    , isDisabled = False
-            --    , inputAttrs = []
-            --    , onInput = InputPasswordConfirmation
-            --    }
+            , Lib.Bulma.Field.view
+                { id = "email"
+                , label = "Email"
+                , tipe = Lib.Bulma.Field.Email
+                , field = fields.email
+                , errorToString = Error.emailErrorToString
+                , isRequired = True
+                , isDisabled = False
+                , inputAttrs = []
+                , onInput = InputEmail
+                }
+            , Lib.Bulma.Field.view
+                { id = "password"
+                , label = "Password"
+                , tipe = Lib.Bulma.Field.Password
+                , field = fields.password
+                , errorToString = Error.passwordErrorToString
+                , isRequired = True
+                , isDisabled = False
+                , inputAttrs = []
+                , onInput = InputPassword
+                }
+            , Lib.Bulma.Field.view
+                { id = "passwordConfirmation"
+                , label = "Password Confirmation"
+                , tipe = Lib.Bulma.Field.Password
+                , field = fields.passwordConfirmation
+                , errorToString = Error.passwordConfirmationErrorToString
+                , isRequired = True
+                , isDisabled = False
+                , inputAttrs = []
+                , onInput = InputPasswordConfirmation
+                }
             , H.div [ HA.class "field" ]
                 [ H.div [ HA.class "control" ]
                     [ H.button
@@ -143,11 +145,23 @@ view { signUp, maybeOutput } =
             ]
         , case maybeOutput of
             Just { username, email, password } ->
-                H.div []
-                    [ H.h2 [] [ H.text "Output" ]
-                    , H.p [] [ H.text <| "Username: " ++ Username.toString username ]
-                    , H.p [] [ H.text <| "Email: " ++ Email.toString email ]
-                    , H.p [] [ H.text <| "Password: " ++ Password.toString password ]
+                H.div [ HA.class "content" ]
+                    [ H.h2 [ HA.class "title is-2" ] [ H.text "Output" ]
+                    , H.p []
+                        [ H.strong [] [ H.text "Username:" ]
+                        , H.text " "
+                        , H.text (Username.toString username)
+                        ]
+                    , H.p []
+                        [ H.strong [] [ H.text "Email:" ]
+                        , H.text " "
+                        , H.text (Email.toString email)
+                        ]
+                    , H.p []
+                        [ H.strong [] [ H.text "Password:" ]
+                        , H.text " "
+                        , H.text (Password.toString password)
+                        ]
                     ]
 
             Nothing ->
@@ -155,18 +169,10 @@ view { signUp, maybeOutput } =
         ]
 
 
-usernameErrorToString : Username.Error -> String
-usernameErrorToString =
-    Field.errorToString
-        { onBlank = "It is required."
-        , onSyntaxError = always ""
-        , onValidationError = always ""
-        , onCustomError =
-            \error ->
-                case error of
-                    Username.TooShort { actual, min } ->
-                        "It must be at least " ++ String.fromInt min ++ " characters in length: " ++ String.fromInt actual ++ "."
-
-                    Username.TooLong { actual, max } ->
-                        "It must be at most " ++ String.fromInt max ++ " characters in length: " ++ String.fromInt actual ++ "."
-        }
+viewCenter : List (H.Html msg) -> H.Html msg
+viewCenter children =
+    H.div [ HA.class "container p-4" ]
+        [ H.div [ HA.class "columns" ]
+            [ H.div [ HA.class "column is-half is-offset-one-quarter" ] children
+            ]
+        ]

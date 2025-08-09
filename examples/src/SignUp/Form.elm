@@ -1,5 +1,5 @@
 module SignUp.Form exposing
-    ( Error
+    ( Error(..)
     , Fields
     , Form
     , Output
