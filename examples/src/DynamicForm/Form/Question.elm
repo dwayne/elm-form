@@ -12,13 +12,6 @@ import Field.Advanced as Field exposing (Field, Validation)
 import Form
 
 
---
--- TODO:
---
--- 1. Write tests.
--- 2. Implement DynamicForm.SimpleView.
---
-
 
 -- FORM
 
