@@ -13,6 +13,7 @@ import Html.Events as HE
 import Lib.Browser.Dom as BD
 import Lib.Bulma.Field
 import Lib.Bulma.Select
+import Lib.Bulma.Textarea
 import Lib.Html.Select as Select
 
 
@@ -162,15 +163,14 @@ view { dynamic, maybeOutput } =
                             Form.toFields fields.post
                     in
                     H.fieldset [ HA.class "block" ]
-                        [ Lib.Bulma.Field.view
+                        [ Lib.Bulma.Textarea.view
                             { id = "post-body"
                             , label = "Body"
-                            , tipe = Lib.Bulma.Field.Text
                             , field = postFields.body
                             , errorToString = Error.textErrorToString
                             , isRequired = True
                             , isDisabled = False
-                            , inputAttrs = [ HA.placeholder "Type your post here..." ]
+                            , attrs = [ HA.placeholder "Type your post here..." ]
                             , onInput = InputPostBody
                             }
                         ]
@@ -192,15 +192,14 @@ view { dynamic, maybeOutput } =
                             , inputAttrs = [ HA.placeholder "Type your question here..." ]
                             , onInput = InputQuestionTitle
                             }
-                        , Lib.Bulma.Field.view
+                        , Lib.Bulma.Textarea.view
                             { id = "question-body"
                             , label = "Body"
-                            , tipe = Lib.Bulma.Field.Text
                             , field = questionFields.body
                             , errorToString = Error.textErrorToString
                             , isRequired = True
                             , isDisabled = False
-                            , inputAttrs = [ HA.placeholder "Describe your question here... (optional)" ]
+                            , attrs = [ HA.placeholder "Describe your question here... (optional)" ]
                             , onInput = InputQuestionBody
                             }
                         ]
