@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/Base.astro";
+---
+<BaseLayout subtitle="DynamicForm Simple View">
+  <div id="DynamicForm.SimpleView"></div>
+  <script>
+    import { Elm } from "@/DynamicForm/SimpleView.elm";
+
+    Elm.DynamicForm.SimpleView.init({
+      node: document.getElementById("DynamicForm.SimpleView")
+    });
+  </script>
+</BaseLayout>
