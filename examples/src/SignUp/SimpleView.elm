@@ -7,7 +7,7 @@ import Html as H
 import Html.Attributes as HA
 import Html.Events as HE
 import Lib.Browser.Dom as BD
-import Lib.Bulma.Field
+import Lib.Bulma.Input
 import SignUp.Email as Email
 import SignUp.Error as Error
 import SignUp.Form as SignUp
@@ -112,49 +112,49 @@ view { signUp, maybeOutput } =
             , HA.novalidate True
             , HE.onSubmit Submit
             ]
-            [ Lib.Bulma.Field.view
+            [ Lib.Bulma.Input.view
                 { id = "username"
                 , label = "Username"
-                , tipe = Lib.Bulma.Field.Text
+                , tipe = Lib.Bulma.Input.Text
                 , field = fields.username
                 , errorToString = Error.usernameErrorToString
                 , isRequired = True
                 , isDisabled = False
-                , inputAttrs = [ HA.autofocus True ]
                 , onInput = InputUsername
+                , attrs = [ HA.autofocus True ]
                 }
-            , Lib.Bulma.Field.view
+            , Lib.Bulma.Input.view
                 { id = "email"
                 , label = "Email"
-                , tipe = Lib.Bulma.Field.Email
+                , tipe = Lib.Bulma.Input.Email
                 , field = fields.email
                 , errorToString = Error.emailErrorToString
                 , isRequired = True
                 , isDisabled = False
-                , inputAttrs = []
                 , onInput = InputEmail
+                , attrs = []
                 }
-            , Lib.Bulma.Field.view
+            , Lib.Bulma.Input.view
                 { id = "password"
                 , label = "Password"
-                , tipe = Lib.Bulma.Field.Password
+                , tipe = Lib.Bulma.Input.Password
                 , field = fields.password
                 , errorToString = Error.passwordErrorToString
                 , isRequired = True
                 , isDisabled = False
-                , inputAttrs = []
                 , onInput = InputPassword
+                , attrs = []
                 }
-            , Lib.Bulma.Field.view
+            , Lib.Bulma.Input.view
                 { id = "passwordConfirmation"
                 , label = "Password Confirmation"
-                , tipe = Lib.Bulma.Field.Password
+                , tipe = Lib.Bulma.Input.Password
                 , field = fields.passwordConfirmation
                 , errorToString = Error.passwordConfirmationErrorToString
                 , isRequired = True
                 , isDisabled = False
-                , inputAttrs = []
                 , onInput = InputPasswordConfirmation
+                , attrs = []
                 }
             , H.div [ HA.class "field" ]
                 [ H.div [ HA.class "control" ]

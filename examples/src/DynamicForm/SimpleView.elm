@@ -11,7 +11,7 @@ import Html as H
 import Html.Attributes as HA
 import Html.Events as HE
 import Lib.Browser.Dom as BD
-import Lib.Bulma.Field
+import Lib.Bulma.Input
 import Lib.Bulma.Select
 import Lib.Bulma.Textarea
 import Lib.Html.Select as Select
@@ -181,16 +181,16 @@ view { dynamic, maybeOutput } =
                             Form.toFields fields.question
                     in
                     H.fieldset [ HA.class "block" ]
-                        [ Lib.Bulma.Field.view
+                        [ Lib.Bulma.Input.view
                             { id = "question-title"
                             , label = "Title"
-                            , tipe = Lib.Bulma.Field.Text
+                            , tipe = Lib.Bulma.Input.Text
                             , field = questionFields.title
                             , errorToString = Error.textErrorToString
                             , isRequired = True
                             , isDisabled = False
-                            , inputAttrs = [ HA.placeholder "Type your question here..." ]
                             , onInput = InputQuestionTitle
+                            , attrs = [ HA.placeholder "Type your question here..." ]
                             }
                         , Lib.Bulma.Textarea.view
                             { id = "question-body"

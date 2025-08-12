@@ -1,4 +1,4 @@
-module Lib.Bulma.Field exposing (Type(..), ViewOptions, view)
+module Lib.Bulma.Input exposing (Type(..), ViewOptions, view)
 
 import Field.Advanced as F exposing (Field)
 import Html as H
@@ -14,8 +14,8 @@ type alias ViewOptions e a msg =
     , errorToString : e -> String
     , isRequired : Bool
     , isDisabled : Bool
-    , inputAttrs : List (H.Attribute msg)
     , onInput : String -> msg
+    , attrs : List (H.Attribute msg)
     }
 
 
@@ -26,7 +26,7 @@ type Type
 
 
 view : ViewOptions e a msg -> H.Html msg
-view { id, label, tipe, field, errorToString, isRequired, isDisabled, inputAttrs, onInput } =
+view { id, label, tipe, field, errorToString, isRequired, isDisabled, onInput, attrs } =
     let
         isDirty =
             F.isDirty field
@@ -47,7 +47,7 @@ view { id, label, tipe, field, errorToString, isRequired, isDisabled, inputAttrs
                 , isDisabled = isDisabled
                 , onInput = onInput
                 , attrs =
-                    inputAttrs
+                    attrs
                         ++ [ HA.class "input"
                            , HA.classList
                                 [ ( "is-success", isDirty && isValid )
