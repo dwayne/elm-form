@@ -200,7 +200,7 @@ view { dynamic, maybeOutput } =
                             , errorToString = Error.textErrorToString
                             , isRequired = True
                             , isDisabled = False
-                            , inputAttrs = [ HA.placeholder "Describe your question here..." ]
+                            , inputAttrs = [ HA.placeholder "Describe your question here... (optional)" ]
                             , onInput = InputQuestionBody
                             }
                         ]
@@ -239,7 +239,10 @@ view { dynamic, maybeOutput } =
                     , H.p []
                         [ H.strong [] [ H.text "Body:" ]
                         , H.text " "
-                        , H.text (Text.toString body)
+                        , body
+                            |> Maybe.map Text.toString
+                            |> Maybe.withDefault ""
+                            |> H.text
                         ]
                     ]
 

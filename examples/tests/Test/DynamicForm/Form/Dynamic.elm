@@ -116,7 +116,7 @@ suite =
                         |> Form.toFields
                         |> .body
                         |> Field.allErrors
-                        |> Expect.equal [ Field.blankError ]
+                        |> Expect.equal []
             , test "when question title has less than 10 characters" <|
                 \_ ->
                     form
@@ -137,6 +137,30 @@ suite =
                         |> .body
                         |> Field.allErrors
                         |> Expect.equal [ Field.customError (Text.TooShort 100) ]
+            , fuzz (Fuzz.oneOfValues [ String.repeat 10 "a", String.repeat 10 "ab" ]) "when question title has 10 characters or more" <|
+                \t ->
+                    form
+                        |> Form.update .setQuestion (Form.update .setTitle t question)
+                        |> Form.validateAsMaybe
+                        |> Maybe.map
+                            (\output ->
+                                case output of
+                                    Dynamic.QuestionOutput { title, body } ->
+                                        { title = Text.toString title
+                                        , body = body |> Maybe.map Text.toString |> Maybe.withDefault ""
+                                        }
+
+                                    _ ->
+                                        { title = ""
+                                        , body = ""
+                                        }
+                            )
+                        |> Expect.equal
+                            (Just
+                                { title = t
+                                , body = ""
+                                }
+                            )
             , fuzz2
                 (Fuzz.oneOfValues [ String.repeat 10 "a", String.repeat 10 "ab" ])
                 (Fuzz.oneOfValues [ String.repeat 50 "ab", String.repeat 50 "abcd" ])
@@ -161,7 +185,7 @@ suite =
                                 case output of
                                     Dynamic.QuestionOutput { title, body } ->
                                         { title = Text.toString title
-                                        , body = Text.toString body
+                                        , body = body |> Maybe.map Text.toString |> Maybe.withDefault ""
                                         }
 
                                     _ ->

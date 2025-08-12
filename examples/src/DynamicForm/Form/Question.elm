@@ -22,7 +22,7 @@ type alias Form =
 
 type alias Fields =
     { title : Field Text.Error Text
-    , body : Field Text.Error Text
+    , body : Field Text.Error (Maybe Text)
     }
 
 
@@ -39,7 +39,7 @@ type Error
 
 type alias Output =
     { title : Text
-    , body : Text
+    , body : Maybe Text
     }
 
 
@@ -50,7 +50,7 @@ form =
         , validate = validate
         }
         { title = Field.empty (Text.fieldType 10)
-        , body = Field.empty (Text.fieldType 100)
+        , body = Field.empty (Field.optional <| Text.fieldType 100)
         }
 
 
