@@ -1,0 +1,13 @@
+---
+import BaseLayout from "@/layouts/Base.astro";
+---
+<BaseLayout subtitle="FormList Simple View">
+  <div id="FormList.SimpleView"></div>
+  <script>
+    import { Elm } from "@/FormList/SimpleView.elm";
+
+    Elm.FormList.SimpleView.init({
+      node: document.getElementById("FormList.SimpleView")
+    });
+  </script>
+</BaseLayout>
