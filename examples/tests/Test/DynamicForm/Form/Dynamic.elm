@@ -1,8 +1,8 @@
 module Test.DynamicForm.Form.Dynamic exposing (suite)
 
+import Data.Text as Text
 import DynamicForm.Form.Dynamic as Dynamic
 import DynamicForm.Publication as Publication
-import DynamicForm.Text as Text
 import Expect
 import Field.Advanced as Field
 import Form

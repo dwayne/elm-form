@@ -7,10 +7,10 @@ module DynamicForm.Form.Dynamic exposing
     , form
     )
 
+import Data.Text as Text exposing (Text)
 import DynamicForm.Form.Post as Post
 import DynamicForm.Form.Question as Question
 import DynamicForm.Publication as Publication exposing (Publication)
-import DynamicForm.Text as Text exposing (Text)
 import Field.Advanced as Field exposing (Field, Validation)
 import Form
 import Validation as V

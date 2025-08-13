@@ -1,10 +1,10 @@
 module DynamicForm.SimpleView exposing (main)
 
 import Browser as B
+import Data.Text as Text
 import DynamicForm.Error as Error
 import DynamicForm.Form.Dynamic as Dynamic
 import DynamicForm.Publication as Publication exposing (Publication)
-import DynamicForm.Text as Text
 import Field.Advanced as Field
 import Form
 import Html as H

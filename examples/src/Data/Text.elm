@@ -1,4 +1,4 @@
-module DynamicForm.Text exposing
+module Data.Text exposing
     ( CustomError(..)
     , Error
     , Text

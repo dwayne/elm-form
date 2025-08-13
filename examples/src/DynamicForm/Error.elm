@@ -3,8 +3,8 @@ module DynamicForm.Error exposing
     , textErrorToString
     )
 
+import Data.Text as Text
 import DynamicForm.Publication as Publication
-import DynamicForm.Text as Text
 import Field.Advanced as F
 
 

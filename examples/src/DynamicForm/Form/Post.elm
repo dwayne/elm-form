@@ -7,7 +7,7 @@ module DynamicForm.Form.Post exposing
     , form
     )
 
-import DynamicForm.Text as Text exposing (Text)
+import Data.Text as Text exposing (Text)
 import Field.Advanced as Field exposing (Field, Validation)
 import Form
 
