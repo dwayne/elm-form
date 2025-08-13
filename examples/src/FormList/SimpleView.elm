@@ -122,7 +122,7 @@ view { formList, maybeOutput } =
             Form.toFields formList
     in
     viewCenter
-        [ H.h1 [ HA.class "title is-1" ] [ H.text "Form list" ]
+        [ H.h1 [ HA.class "title is-1" ] [ H.text "Form List" ]
         , H.form
             [ HA.class "block"
             , HA.novalidate True

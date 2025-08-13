@@ -125,7 +125,7 @@ view { dynamic, maybeOutput } =
             Form.toFields dynamic
     in
     viewCenter
-        [ H.h1 [ HA.class "title is-1" ] [ H.text "Dynamic form" ]
+        [ H.h1 [ HA.class "title is-1" ] [ H.text "Dynamic Form" ]
         , H.form
             [ HA.class "block"
             , HA.novalidate True
