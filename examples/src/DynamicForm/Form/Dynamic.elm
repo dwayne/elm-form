@@ -11,9 +11,9 @@ import Data.Text as Text exposing (Text)
 import DynamicForm.Form.Post as Post
 import DynamicForm.Form.Question as Question
 import DynamicForm.Publication as Publication exposing (Publication)
-import Field.Advanced as Field exposing (Field, Validation)
+import Field.Advanced as Field exposing (Field)
 import Form
-import Validation as V
+import Validation as V exposing (Validation)
 
 
 

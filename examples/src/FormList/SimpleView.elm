@@ -9,6 +9,7 @@ import FormList.Form as FormList
 import Html as H
 import Html.Attributes as HA
 import Html.Events as HE
+import Html.Keyed as HK
 import Lib.Browser.Dom as BD
 import Lib.Bulma.Input
 import Lib.Bulma.Select
@@ -31,14 +32,16 @@ main =
 
 
 type alias Model =
-    { formList : FormList.Form
+    { id : Int
+    , formList : FormList.Form
     , maybeOutput : Maybe FormList.Output
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { formList = FormList.form
+    ( { id = 1
+      , formList = FormList.form 0
       , maybeOutput = Nothing
       }
     , focusName
@@ -52,6 +55,8 @@ init _ =
 type Msg
     = Focus
     | InputName String
+    | InputWebsiteName Int String
+    | InputWebsiteAddress Int String
     | Submit
 
 
@@ -66,8 +71,22 @@ update msg model =
             , Cmd.none
             )
 
+        InputWebsiteName id s ->
+            ( { model | formList = Form.update .setWebsiteName ( id, s ) model.formList }
+            , Cmd.none
+            )
+
+        InputWebsiteAddress id s ->
+            ( { model | formList = Form.update .setWebsiteAddress ( id, s ) model.formList }
+            , Cmd.none
+            )
+
         Submit ->
-            ( { model | formList = FormList.form, maybeOutput = Form.validateAsMaybe model.formList }
+            ( { model
+                | id = model.id + 1
+                , formList = FormList.form model.id
+                , maybeOutput = Form.validateAsMaybe model.formList
+              }
             , focusName
             )
 
@@ -106,6 +125,60 @@ view { formList, maybeOutput } =
                 , attrs = [ HA.placeholder "Type your name" ]
                 }
             , H.div [ HA.class "field" ]
+                [ H.strong [] [ H.text "Websites" ]
+                ]
+            , HK.node "div" [ HA.class "field" ] <|
+                List.indexedMap
+                    (\index website ->
+                        let
+                            id =
+                                String.fromInt website.id
+                        in
+                        ( id
+                        , H.div [ HA.class "box" ]
+                            [ H.button
+                                [ HA.class "delete"
+                                , HA.type_ "button"
+                                ]
+                                []
+                            , Lib.Bulma.Input.view
+                                { id = "website-name-" ++ id
+                                , label = "Name of website #" ++ String.fromInt (index + 1)
+                                , tipe = Lib.Bulma.Input.Text
+                                , field = website.name
+                                , errorToString = Error.textErrorToString
+                                , isRequired = True
+                                , isDisabled = False
+                                , onInput = InputWebsiteName website.id
+                                , attrs = []
+                                }
+                            , Lib.Bulma.Input.view
+                                { id = "website-address-" ++ id
+                                , label = "Address of website #" ++ String.fromInt (index + 1)
+                                , tipe = Lib.Bulma.Input.Text
+                                , field = website.address
+                                , errorToString = Error.textErrorToString
+                                , isRequired = True
+                                , isDisabled = False
+                                , onInput = InputWebsiteAddress website.id
+                                , attrs = [ HA.placeholder "https://..." ]
+                                }
+                            ]
+                        )
+                    )
+                    fields.websites
+            , H.div [ HA.class "field" ]
+                [ H.button
+                    [ HA.class "button is-text"
+                    , HA.type_ "button"
+                    ]
+                    [ H.span [ HA.class "icon" ]
+                        [ H.i [ HA.class "fas fa-plus" ] []
+                        ]
+                    , H.span [] [ H.text "Add website" ]
+                    ]
+                ]
+            , H.div [ HA.class "field" ]
                 [ H.div [ HA.class "control" ]
                     [ H.button
                         [ HA.class "button is-link"
@@ -116,7 +189,7 @@ view { formList, maybeOutput } =
                 ]
             ]
         , case maybeOutput of
-            Just { name } ->
+            Just { name, websites } ->
                 H.div [ HA.class "content" ]
                     [ H.h2 [ HA.class "title is-2" ] [ H.text "Output" ]
                     , H.p []
@@ -124,6 +197,18 @@ view { formList, maybeOutput } =
                         , H.text " "
                         , H.text (Text.toString name)
                         ]
+                    , websites
+                        |> List.map
+                            (\website ->
+                                H.a
+                                    [ HA.href (Text.toString website.address)
+                                    , HA.target "_blank"
+                                    ]
+                                    [ H.text (Text.toString website.name) ]
+                            )
+                        |> List.intersperse (H.text ", ")
+                        |> (++) [ H.strong [] [ H.text "Websites:" ], H.text " " ]
+                        |> H.p []
                     ]
 
             Nothing ->
