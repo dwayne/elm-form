@@ -57,6 +57,7 @@ type Msg
     | InputName String
     | InputWebsiteName Int String
     | InputWebsiteAddress Int String
+    | ClickedRemoveWebsiteButton Int
     | Submit
 
 
@@ -78,6 +79,11 @@ update msg model =
 
         InputWebsiteAddress id s ->
             ( { model | formList = Form.update .setWebsiteAddress ( id, s ) model.formList }
+            , Cmd.none
+            )
+
+        ClickedRemoveWebsiteButton id ->
+            ( { model | formList = Form.update .removeWebsite id model.formList }
             , Cmd.none
             )
 
@@ -139,6 +145,7 @@ view { formList, maybeOutput } =
                             [ H.button
                                 [ HA.class "delete"
                                 , HA.type_ "button"
+                                , HE.onClick (ClickedRemoveWebsiteButton website.id)
                                 ]
                                 []
                             , Lib.Bulma.Input.view

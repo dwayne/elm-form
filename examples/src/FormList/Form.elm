@@ -40,6 +40,7 @@ type alias Setters =
     { setName : String -> Fields -> Fields
     , setWebsiteName : ( Int, String ) -> Fields -> Fields
     , setWebsiteAddress : ( Int, String ) -> Fields -> Fields
+    , removeWebsite : Int -> Fields -> Fields
     }
 
 
@@ -114,6 +115,9 @@ setters =
                         )
                         fields.websites
             }
+    , removeWebsite =
+        \id fields ->
+            { fields | websites = List.filter (.id >> (/=) id) fields.websites }
     }
 
 
