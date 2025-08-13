@@ -40,6 +40,7 @@ type alias Setters =
     { setName : String -> Fields -> Fields
     , setWebsiteName : ( Int, String ) -> Fields -> Fields
     , setWebsiteAddress : ( Int, String ) -> Fields -> Fields
+    , addWebsite : Int -> Fields -> Fields
     , removeWebsite : Int -> Fields -> Fields
     }
 
@@ -114,6 +115,17 @@ setters =
                                 website
                         )
                         fields.websites
+            }
+    , addWebsite =
+        \id fields ->
+            { fields
+                | websites =
+                    fields.websites
+                        ++ [ { id = id
+                             , name = Field.empty (Text.fieldType 1)
+                             , address = Field.fromString (Text.fieldType 1) "https://"
+                             }
+                           ]
             }
     , removeWebsite =
         \id fields ->

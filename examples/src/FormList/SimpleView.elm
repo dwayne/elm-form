@@ -57,6 +57,7 @@ type Msg
     | InputName String
     | InputWebsiteName Int String
     | InputWebsiteAddress Int String
+    | ClickedAddWebsiteButton
     | ClickedRemoveWebsiteButton Int
     | Submit
 
@@ -79,6 +80,14 @@ update msg model =
 
         InputWebsiteAddress id s ->
             ( { model | formList = Form.update .setWebsiteAddress ( id, s ) model.formList }
+            , Cmd.none
+            )
+
+        ClickedAddWebsiteButton ->
+            ( { model
+                | id = model.id + 1
+                , formList = Form.update .addWebsite model.id model.formList
+              }
             , Cmd.none
             )
 
@@ -178,6 +187,7 @@ view { formList, maybeOutput } =
                 [ H.button
                     [ HA.class "button is-text"
                     , HA.type_ "button"
+                    , HE.onClick ClickedAddWebsiteButton
                     ]
                     [ H.span [ HA.class "icon" ]
                         [ H.i [ HA.class "fas fa-plus" ] []
