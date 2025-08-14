@@ -1,17 +1,17 @@
 module FormList.Form exposing
-    ( Error
+    ( Accessors
+    , Error
     , Form
-    , Modifiers
     , Output
     , State
-    , Website
-    , WebsiteState
     , form
     )
 
 import Data.Text as Text exposing (Text)
 import Field.Advanced as Field exposing (Field)
-import Form
+import Form exposing (Accessor)
+import Form.List exposing (Forms)
+import FormList.Website as Website
 import Validation as V exposing (Validation)
 
 
@@ -20,54 +20,40 @@ import Validation as V exposing (Validation)
 
 
 type alias Form =
-    Form.Form State Modifiers Error Output
+    Form.Form State Accessors Error Output
 
 
 type alias State =
     { name : Field Text.Error Text
-    , websites : List WebsiteState
+    , websites : Forms Website.Form
     }
 
 
-type alias WebsiteState =
-    { id : Int
-    , name : Field Text.Error Text
-    , address : Field Text.Error Text
-    }
-
-
-type alias Modifiers =
-    { setName : String -> State -> State
-    , setWebsiteName : ( Int, String ) -> State -> State
-    , setWebsiteAddress : ( Int, String ) -> State -> State
-    , addWebsite : Int -> State -> State
+type alias Accessors =
+    { name : Accessor State (Field Text.Error Text)
+    , websiteName : Int -> Accessor State (Field Text.Error Text)
+    , websiteAddress : Int -> Accessor State (Field Text.Error Text)
+    , addWebsite : State -> State
     , removeWebsite : Int -> State -> State
     }
 
 
 type Error
     = NameError Text.Error
-    | WebsiteNameError Text.Error
-    | WebsiteAddressError Text.Error
+    | WebsiteError Website.Error
 
 
 type alias Output =
     { name : Text
-    , websites : List Website
+    , websites : List Website.Output
     }
 
 
-type alias Website =
-    { name : Text
-    , address : Text
-    }
-
-
-form : Int -> Form
-form id =
+form : Form
+form =
     Form.new
-        { init = init id
-        , modifiers = modifiers
+        { init = init
+        , accessors = accessors
         , validate = validate
         }
 
@@ -76,70 +62,46 @@ form id =
 -- INIT
 
 
-init : Int -> State
-init id =
+init : State
+init =
     { name = Field.empty (Text.fieldType 2)
-    , websites =
-        [ { id = id
-          , name = Field.fromString (Text.fieldType 1) "Elm"
-          , address = Field.fromString (Text.fieldType 1) "https://elm-lang.org/"
-          }
-        ]
+    , websites = Form.List.fromList [ Website.form "Elm" "https://elm-lang.org/" ]
     }
 
 
 
--- MODIFIERS
+-- ACCESSORS
 
 
-modifiers : Modifiers
-modifiers =
-    { setName =
-        \s state ->
-            { state | name = Field.setFromString s state.name }
-    , setWebsiteName =
-        \( id, s ) state ->
-            { state
-                | websites =
-                    List.map
-                        (\website ->
-                            if website.id == id then
-                                { website | name = Field.setFromString s website.name }
-
-                            else
-                                website
-                        )
-                        state.websites
+accessors : Accessors
+accessors =
+    { name =
+        { get = .name
+        , modify = \f state -> { state | name = f state.name }
+        }
+    , websiteName =
+        \id ->
+            { get = .websites >> Form.List.get id .name emptyWebsiteName
+            , modify = \f state -> { state | websites = Form.List.modify id .name f state.websites }
             }
-    , setWebsiteAddress =
-        \( id, s ) state ->
-            { state
-                | websites =
-                    List.map
-                        (\website ->
-                            if website.id == id then
-                                { website | address = Field.setFromString s website.address }
-
-                            else
-                                website
-                        )
-                        state.websites
+    , websiteAddress =
+        \id ->
+            { get = .websites >> Form.List.get id .address emptyWebsiteAddress
+            , modify = \f state -> { state | websites = Form.List.modify id .address f state.websites }
             }
-    , addWebsite =
-        \id state ->
-            { state
-                | websites =
-                    state.websites
-                        ++ [ { id = id
-                             , name = Field.empty (Text.fieldType 1)
-                             , address = Field.fromString (Text.fieldType 1) "https://"
-                             }
-                           ]
-            }
-    , removeWebsite =
-        \id state ->
-            { state | websites = List.filter (.id >> (/=) id) state.websites }
+    , addWebsite = \state -> { state | websites = Form.List.append (Website.form "" "https://") state.websites }
+    , removeWebsite = \id state -> { state | websites = Form.List.remove id state.websites }
     }
+
+
+emptyWebsiteName : Field Text.Error Text
+emptyWebsiteName =
+    Field.empty (Text.fieldType 1)
+
+
+emptyWebsiteAddress : Field Text.Error Text
+emptyWebsiteAddress =
+    Field.empty (Text.fieldType 1)
 
 
 
@@ -150,25 +112,4 @@ validate : State -> Validation Error Output
 validate state =
     Field.succeed Output
         |> Field.applyValidation (state.name |> Field.mapError NameError)
-        |> V.apply (validateWebsites state.websites)
-
-
-validateWebsites : List WebsiteState -> Validation Error (List Website)
-validateWebsites stateList =
-    case stateList of
-        [] ->
-            V.succeed []
-
-        state :: rest ->
-            V.map2
-                (::)
-                (validateWebsiteState state)
-                (validateWebsites rest)
-
-
-validateWebsiteState : WebsiteState -> Validation Error Website
-validateWebsiteState state =
-    Field.validate2
-        Website
-        (state.name |> Field.mapError WebsiteNameError)
-        (state.address |> Field.mapError WebsiteAddressError)
+        |> V.apply (Form.List.validate WebsiteError state.websites)

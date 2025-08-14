@@ -66,22 +66,22 @@ update msg model =
             ( model, Cmd.none )
 
         InputPublication publication ->
-            ( { model | dynamic = Form.update .setPublication publication model.dynamic }
+            ( { model | dynamic = Form.modify .publication (Field.setFromValue publication) model.dynamic }
             , Cmd.none
             )
 
         InputPostBody s ->
-            ( { model | dynamic = Form.update .setPost ( .setBody, s ) model.dynamic }
+            ( { model | dynamic = Form.modify .postBody (Field.setFromString s) model.dynamic }
             , Cmd.none
             )
 
         InputQuestionTitle s ->
-            ( { model | dynamic = Form.update .setQuestion ( .setTitle, s ) model.dynamic }
+            ( { model | dynamic = Form.modify .questionTitle (Field.setFromString s) model.dynamic }
             , Cmd.none
             )
 
         InputQuestionBody s ->
-            ( { model | dynamic = Form.update .setQuestion ( .setBody, s ) model.dynamic }
+            ( { model | dynamic = Form.modify .questionBody (Field.setFromString s) model.dynamic }
             , Cmd.none
             )
 
@@ -103,8 +103,8 @@ focusPublication =
 view : Model -> H.Html Msg
 view { dynamic, maybeOutput } =
     let
-        state =
-            Form.toState dynamic
+        publicationField =
+            Form.get .publication dynamic
     in
     viewCenter
         [ H.h1 [ HA.class "title is-1" ] [ H.text "Dynamic Form" ]
@@ -116,7 +116,7 @@ view { dynamic, maybeOutput } =
             [ Lib.Bulma.Select.view
                 { id = "publication"
                 , label = "Type of publication"
-                , field = state.publication
+                , field = publicationField
                 , options =
                     ( Select.Label "-- Choose a type --"
                     , [ Publication.Post
@@ -138,17 +138,13 @@ view { dynamic, maybeOutput } =
                 , selectAttrs = [ HA.autofocus True ]
                 , optionAttrs = always []
                 }
-            , case Field.toMaybe state.publication of
+            , case Field.toMaybe publicationField of
                 Just Publication.Post ->
-                    let
-                        postFields =
-                            Form.toState state.post
-                    in
                     H.fieldset [ HA.class "block" ]
                         [ Lib.Bulma.Textarea.view
                             { id = "post-body"
                             , label = "Body"
-                            , field = postFields.body
+                            , field = Form.get .postBody dynamic
                             , errorToString = Error.textErrorToString
                             , isRequired = True
                             , isDisabled = False
@@ -158,16 +154,12 @@ view { dynamic, maybeOutput } =
                         ]
 
                 Just Publication.Question ->
-                    let
-                        questionFields =
-                            Form.toState state.question
-                    in
                     H.fieldset [ HA.class "block" ]
                         [ Lib.Bulma.Input.view
                             { id = "question-title"
                             , label = "Title"
                             , tipe = Lib.Bulma.Input.Text
-                            , field = questionFields.title
+                            , field = Form.get .questionTitle dynamic
                             , errorToString = Error.textErrorToString
                             , isRequired = True
                             , isDisabled = False
@@ -177,7 +169,7 @@ view { dynamic, maybeOutput } =
                         , Lib.Bulma.Textarea.view
                             { id = "question-body"
                             , label = "Body"
-                            , field = questionFields.body
+                            , field = Form.get .questionBody dynamic
                             , errorToString = Error.textErrorToString
                             , isRequired = True
                             , isDisabled = False

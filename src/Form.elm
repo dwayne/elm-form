@@ -1,9 +1,13 @@
 module Form exposing
-    ( Form
+    ( Accessor
+    , Form
     , Options
+    , get
     , isInvalid
     , isValid
+    , modify
     , new
+    , set
     , toState
     , update
     , validate
@@ -14,60 +18,82 @@ module Form exposing
 import Validation as V exposing (Validation)
 
 
-type Form state modifiers error output
+type Form state accessors error output
     = Form
-        { config : Config state modifiers error output
-        , state : state
+        { state : state
+        , accessors : accessors
+        , validate : state -> Validation error output
         }
-
-
-type alias Config state modifiers error output =
-    { modifiers : modifiers
-    , validate : state -> Validation error output
-    }
 
 
 
 -- CONSTRUCT
 
 
-type alias Options state modifiers error output =
+type alias Options state accessors error output =
     { init : state
-    , modifiers : modifiers
+    , accessors : accessors
     , validate : state -> Validation error output
     }
 
 
-new : Options state modifiers error output -> Form state modifiers error output
+new : Options state accessors error output -> Form state accessors error output
 new options =
     Form
-        { config =
-            { modifiers = options.modifiers
-            , validate = options.validate
-            }
-        , state = options.init
+        { state = options.init
+        , accessors = options.accessors
+        , validate = options.validate
         }
+
+
+
+-- ACCESSOR
+
+
+type alias Accessor s a =
+    { get : s -> a
+    , modify : (a -> a) -> s -> s
+    }
+
+
+
+-- GET
+
+
+get : (accessors -> Accessor state a) -> Form state accessors error output -> a
+get toAccessor (Form form) =
+    (toAccessor form.accessors).get form.state
 
 
 
 -- MODIFY
 
 
-update : (modifiers -> a -> state -> state) -> a -> Form state modifiers error output -> Form state modifiers error output
-update f x (Form form) =
-    Form { form | state = f form.config.modifiers x form.state }
+modify : (accessors -> Accessor state a) -> (a -> a) -> Form state accessors error output -> Form state accessors error output
+modify toAccessor t (Form form) =
+    Form { form | state = (toAccessor form.accessors).modify t form.state }
+
+
+set : (accessors -> Accessor state a) -> a -> Form state accessors error output -> Form state accessors error output
+set toAccessor x =
+    modify toAccessor (always x)
+
+
+update : (accessors -> state -> state) -> Form state accessors error output -> Form state accessors error output
+update f (Form form) =
+    Form { form | state = f form.accessors form.state }
 
 
 
 -- QUERY
 
 
-isValid : Form state modifiers error output -> Bool
+isValid : Form state accessors error output -> Bool
 isValid =
     validate >> V.isValid
 
 
-isInvalid : Form state modifiers error output -> Bool
+isInvalid : Form state accessors error output -> Bool
 isInvalid =
     not << isValid
 
@@ -76,17 +102,17 @@ isInvalid =
 -- VALIDATE
 
 
-validate : Form state modifiers error output -> Validation error output
-validate (Form { config, state }) =
-    config.validate state
+validate : Form state accessors error output -> Validation error output
+validate (Form form) =
+    form.validate form.state
 
 
-validateAsResult : Form state modifiers error output -> Result (List error) output
+validateAsResult : Form state accessors error output -> Result (List error) output
 validateAsResult =
     validate >> V.toResult
 
 
-validateAsMaybe : Form state modifiers error output -> Maybe output
+validateAsMaybe : Form state accessors error output -> Maybe output
 validateAsMaybe =
     validate >> V.toMaybe
 
@@ -95,6 +121,6 @@ validateAsMaybe =
 -- CONVERT
 
 
-toState : Form state modifiers error output -> state
+toState : Form state accessors error output -> state
 toState (Form { state }) =
     state

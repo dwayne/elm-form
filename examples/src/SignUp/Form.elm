@@ -1,14 +1,13 @@
 module SignUp.Form exposing
-    ( Error(..)
+    ( Accessors
+    , Error(..)
     , Form
-    , Modifiers
     , Output
-    , State
     , form
     )
 
 import Field.Advanced as Field exposing (Field, Validation)
-import Form
+import Form exposing (Accessor)
 import SignUp.Email as Email exposing (Email)
 import SignUp.Password as Password exposing (Password)
 import SignUp.PasswordConfirmation as PasswordConfirmation exposing (PasswordConfirmation)
@@ -20,7 +19,7 @@ import SignUp.Username as Username exposing (Username)
 
 
 type alias Form =
-    Form.Form State Modifiers Error Output
+    Form.Form State Accessors Error Output
 
 
 type alias State =
@@ -31,11 +30,11 @@ type alias State =
     }
 
 
-type alias Modifiers =
-    { setUsername : String -> State -> State
-    , setEmail : String -> State -> State
-    , setPassword : String -> State -> State
-    , setPasswordConfirmation : String -> State -> State
+type alias Accessors =
+    { username : Accessor State (Field Username.Error Username)
+    , email : Accessor State (Field Email.Error Email)
+    , password : Accessor State (Field Password.Error Password)
+    , passwordConfirmation : Accessor State (Field PasswordConfirmation.Error PasswordConfirmation)
     }
 
 
@@ -57,7 +56,7 @@ form : Form
 form =
     Form.new
         { init = init
-        , modifiers = modifiers
+        , accessors = accessors
         , validate = validate
         }
 
@@ -76,31 +75,39 @@ init =
 
 
 
--- MODIFIERS
+-- ACCESSORS
 
 
-modifiers : Modifiers
-modifiers =
-    { setUsername =
-        \s state ->
-            { state | username = Field.setFromString s state.username }
-    , setEmail =
-        \s state ->
-            { state | email = Field.setFromString s state.email }
-    , setPassword =
-        \s state ->
-            let
-                password =
-                    Field.setFromString s state.password
-            in
-            { state | password = password, passwordConfirmation = updatePasswordConfirmation password state.passwordConfirmation }
-    , setPasswordConfirmation =
-        \s state ->
-            let
-                passwordConfirmation =
-                    Field.setFromString s state.passwordConfirmation
-            in
-            { state | passwordConfirmation = updatePasswordConfirmation state.password passwordConfirmation }
+accessors : Accessors
+accessors =
+    { username =
+        { get = .username
+        , modify = \f state -> { state | username = f state.username }
+        }
+    , email =
+        { get = .email
+        , modify = \f state -> { state | email = f state.email }
+        }
+    , password =
+        { get = .password
+        , modify =
+            \f state ->
+                let
+                    password =
+                        f state.password
+                in
+                { state | password = password, passwordConfirmation = updatePasswordConfirmation password state.passwordConfirmation }
+        }
+    , passwordConfirmation =
+        { get = .passwordConfirmation
+        , modify =
+            \f state ->
+                let
+                    passwordConfirmation =
+                        f state.passwordConfirmation
+                in
+                { state | passwordConfirmation = updatePasswordConfirmation state.password passwordConfirmation }
+        }
     }
 
 

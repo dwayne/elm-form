@@ -26,29 +26,25 @@ nameFormSuite =
             , test "firstName is empty" <|
                 \_ ->
                     Name.form
-                        |> Form.toState
-                        |> .firstName
+                        |> Form.get .firstName
                         |> Field.isEmpty
                         |> Expect.equal True
             , test "firstName is invalid" <|
                 \_ ->
                     Name.form
-                        |> Form.toState
-                        |> .firstName
+                        |> Form.get .firstName
                         |> Field.isInvalid
                         |> Expect.equal True
             , test "lastName is empty" <|
                 \_ ->
                     Name.form
-                        |> Form.toState
-                        |> .lastName
+                        |> Form.get .lastName
                         |> Field.isEmpty
                         |> Expect.equal True
             , test "lastName is valid" <|
                 \_ ->
                     Name.form
-                        |> Form.toState
-                        |> .lastName
+                        |> Form.get .lastName
                         |> Field.isValid
                         |> Expect.equal True
             ]
@@ -56,8 +52,8 @@ nameFormSuite =
             [ test "it is invalid" <|
                 \_ ->
                     Name.form
-                        |> Form.update .setFirstName "   "
-                        |> Form.update .setLastName " \t "
+                        |> Form.modify .firstName (Field.setFromString "   ")
+                        |> Form.modify .lastName (Field.setFromString " \t ")
                         |> Form.validateAsResult
                         |> Expect.equal (Err [ Name.FirstNameError Field.blankError ])
             ]
@@ -65,8 +61,8 @@ nameFormSuite =
             [ test "it is valid with the full name being the first name" <|
                 \_ ->
                     Name.form
-                        |> Form.update .setFirstName "Dave"
-                        |> Form.update .setLastName " \t "
+                        |> Form.modify .firstName (Field.setFromString "Dave")
+                        |> Form.modify .lastName (Field.setFromString " \t ")
                         |> Form.validateAsMaybe
                         |> Expect.equal (Just "Dave")
             ]
@@ -74,8 +70,8 @@ nameFormSuite =
             [ test "it is valid with the full name being the first and last name" <|
                 \_ ->
                     Name.form
-                        |> Form.update .setFirstName "Dave"
-                        |> Form.update .setLastName "MacQueen"
+                        |> Form.modify .firstName (Field.setFromString "Dave")
+                        |> Form.modify .lastName (Field.setFromString "MacQueen")
                         |> Form.validateAsMaybe
                         |> Expect.equal (Just "Dave MacQueen")
             ]

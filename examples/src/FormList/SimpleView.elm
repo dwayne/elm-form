@@ -4,6 +4,7 @@ import Browser as B
 import Data.Text as Text
 import Field.Advanced as Field
 import Form
+import Form.List
 import FormList.Error as Error
 import FormList.Form as FormList
 import Html as H
@@ -32,16 +33,14 @@ main =
 
 
 type alias Model =
-    { id : Int
-    , formList : FormList.Form
+    { formList : FormList.Form
     , maybeOutput : Maybe FormList.Output
     }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { id = 1
-      , formList = FormList.form 0
+    ( { formList = FormList.form
       , maybeOutput = Nothing
       }
     , focusName
@@ -69,37 +68,33 @@ update msg model =
             ( model, Cmd.none )
 
         InputName s ->
-            ( { model | formList = Form.update .setName s model.formList }
+            ( { model | formList = Form.modify .name (Field.setFromString s) model.formList }
             , Cmd.none
             )
 
         InputWebsiteName id s ->
-            ( { model | formList = Form.update .setWebsiteName ( id, s ) model.formList }
+            ( { model | formList = Form.modify (\r -> r.websiteName id) (Field.setFromString s) model.formList }
             , Cmd.none
             )
 
         InputWebsiteAddress id s ->
-            ( { model | formList = Form.update .setWebsiteAddress ( id, s ) model.formList }
+            ( { model | formList = Form.modify (\r -> r.websiteAddress id) (Field.setFromString s) model.formList }
             , Cmd.none
             )
 
         ClickedAddWebsiteButton ->
-            ( { model
-                | id = model.id + 1
-                , formList = Form.update .addWebsite model.id model.formList
-              }
+            ( { model | formList = Form.update .addWebsite model.formList }
             , Cmd.none
             )
 
         ClickedRemoveWebsiteButton id ->
-            ( { model | formList = Form.update .removeWebsite id model.formList }
+            ( { model | formList = Form.update (\r -> r.removeWebsite id) model.formList }
             , Cmd.none
             )
 
         Submit ->
             ( { model
-                | id = model.id + 1
-                , formList = FormList.form model.id
+                | formList = FormList.form
                 , maybeOutput = Form.validateAsMaybe model.formList
               }
             , focusName
@@ -142,47 +137,50 @@ view { formList, maybeOutput } =
             , H.div [ HA.class "field" ]
                 [ H.strong [] [ H.text "Websites" ]
                 ]
-            , HK.node "div" [ HA.class "field" ] <|
-                List.indexedMap
-                    (\index website ->
-                        let
-                            id =
-                                String.fromInt website.id
-                        in
-                        ( id
-                        , H.div [ HA.class "box" ]
-                            [ H.button
-                                [ HA.class "delete"
-                                , HA.type_ "button"
-                                , HE.onClick (ClickedRemoveWebsiteButton website.id)
+            , HK.node "div"
+                [ HA.class "field" ]
+                (state.websites
+                    |> Form.List.toList
+                    |> List.indexedMap
+                        (\index ( id, website ) ->
+                            let
+                                idAsString =
+                                    String.fromInt id
+                            in
+                            ( idAsString
+                            , H.div [ HA.class "box" ]
+                                [ H.button
+                                    [ HA.class "delete"
+                                    , HA.type_ "button"
+                                    , HE.onClick (ClickedRemoveWebsiteButton id)
+                                    ]
+                                    []
+                                , Lib.Bulma.Input.view
+                                    { id = "website-name-" ++ idAsString
+                                    , label = "Name of website #" ++ String.fromInt (index + 1)
+                                    , tipe = Lib.Bulma.Input.Text
+                                    , field = Form.get .name website
+                                    , errorToString = Error.textErrorToString
+                                    , isRequired = True
+                                    , isDisabled = False
+                                    , onInput = InputWebsiteName id
+                                    , attrs = []
+                                    }
+                                , Lib.Bulma.Input.view
+                                    { id = "website-address-" ++ idAsString
+                                    , label = "Address of website #" ++ String.fromInt (index + 1)
+                                    , tipe = Lib.Bulma.Input.Text
+                                    , field = Form.get .address website
+                                    , errorToString = Error.textErrorToString
+                                    , isRequired = True
+                                    , isDisabled = False
+                                    , onInput = InputWebsiteAddress id
+                                    , attrs = [ HA.placeholder "https://..." ]
+                                    }
                                 ]
-                                []
-                            , Lib.Bulma.Input.view
-                                { id = "website-name-" ++ id
-                                , label = "Name of website #" ++ String.fromInt (index + 1)
-                                , tipe = Lib.Bulma.Input.Text
-                                , field = website.name
-                                , errorToString = Error.textErrorToString
-                                , isRequired = True
-                                , isDisabled = False
-                                , onInput = InputWebsiteName website.id
-                                , attrs = []
-                                }
-                            , Lib.Bulma.Input.view
-                                { id = "website-address-" ++ id
-                                , label = "Address of website #" ++ String.fromInt (index + 1)
-                                , tipe = Lib.Bulma.Input.Text
-                                , field = website.address
-                                , errorToString = Error.textErrorToString
-                                , isRequired = True
-                                , isDisabled = False
-                                , onInput = InputWebsiteAddress website.id
-                                , attrs = [ HA.placeholder "https://..." ]
-                                }
-                            ]
+                            )
                         )
-                    )
-                    state.websites
+                )
             , H.div [ HA.class "field" ]
                 [ H.button
                     [ HA.class "button is-text"

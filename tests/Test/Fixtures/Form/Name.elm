@@ -1,14 +1,14 @@
 module Test.Fixtures.Form.Name exposing
-    ( Error(..)
+    ( Accessors
+    , Error(..)
     , Form
-    , Modifiers
     , Output
     , State
     , form
     )
 
 import Field exposing (Field, Validation)
-import Form
+import Form exposing (Accessor)
 
 
 
@@ -16,7 +16,7 @@ import Form
 
 
 type alias Form =
-    Form.Form State Modifiers Error Output
+    Form.Form State Accessors Error Output
 
 
 type alias State =
@@ -25,9 +25,9 @@ type alias State =
     }
 
 
-type alias Modifiers =
-    { setFirstName : String -> State -> State
-    , setLastName : String -> State -> State
+type alias Accessors =
+    { firstName : Accessor State (Field String)
+    , lastName : Accessor State (Field (Maybe String))
     }
 
 
@@ -44,7 +44,7 @@ form : Form
 form =
     Form.new
         { init = init
-        , modifiers = modifiers
+        , accessors = accessors
         , validate = validate
         }
 
@@ -61,17 +61,19 @@ init =
 
 
 
--- MODIFIERS
+-- ACCESSSORS
 
 
-modifiers : Modifiers
-modifiers =
-    { setFirstName =
-        \s state ->
-            { state | firstName = Field.setFromString s state.firstName }
-    , setLastName =
-        \s state ->
-            { state | lastName = Field.setFromString s state.lastName }
+accessors : Accessors
+accessors =
+    { firstName =
+        { get = .firstName
+        , modify = \f state -> { state | firstName = f state.firstName }
+        }
+    , lastName =
+        { get = .lastName
+        , modify = \f state -> { state | lastName = f state.lastName }
+        }
     }
 
 

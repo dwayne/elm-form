@@ -1,9 +1,8 @@
 module DynamicForm.Form.Dynamic exposing
-    ( Error
+    ( Accessors
+    , Error
     , Form
-    , Modifiers
     , Output(..)
-    , State
     , form
     )
 
@@ -12,7 +11,7 @@ import DynamicForm.Form.Post as Post
 import DynamicForm.Form.Question as Question
 import DynamicForm.Publication as Publication exposing (Publication)
 import Field.Advanced as Field exposing (Field)
-import Form
+import Form exposing (Accessor)
 import Validation as V exposing (Validation)
 
 
@@ -21,7 +20,7 @@ import Validation as V exposing (Validation)
 
 
 type alias Form =
-    Form.Form State Modifiers Error Output
+    Form.Form State Accessors Error Output
 
 
 type alias State =
@@ -31,17 +30,11 @@ type alias State =
     }
 
 
-type alias Modifiers =
-    { setPublication : Publication -> State -> State
-
-    --
-    -- setPost and setQuestion work quite nicely because all their modifiers take the same shape and types.
-    --
-    -- What happens if that's not the case? For e.g. How would we nest this form itself?
-    -- My approach to nesting clearly works on a case-by-case basis.
-    --
-    , setPost : ( Post.Modifiers -> String -> Post.State -> Post.State, String ) -> State -> State
-    , setQuestion : ( Question.Modifiers -> String -> Question.State -> Question.State, String ) -> State -> State
+type alias Accessors =
+    { publication : Accessor State (Field Publication.Error Publication)
+    , postBody : Accessor State (Field Text.Error Text)
+    , questionTitle : Accessor State (Field Text.Error Text)
+    , questionBody : Accessor State (Field Text.Error (Maybe Text))
     }
 
 
@@ -60,7 +53,7 @@ form : Form
 form =
     Form.new
         { init = init
-        , modifiers = modifiers
+        , accessors = accessors
         , validate = validate
         }
 
@@ -78,20 +71,27 @@ init =
 
 
 
--- MODIFIERS
+-- ACCESSORS
 
 
-modifiers : Modifiers
-modifiers =
-    { setPublication =
-        \publication state ->
-            { state | publication = Field.setFromValue publication state.publication }
-    , setPost =
-        \( f, x ) state ->
-            { state | post = Form.update f x state.post }
-    , setQuestion =
-        \( f, x ) state ->
-            { state | question = Form.update f x state.question }
+accessors : Accessors
+accessors =
+    { publication =
+        { get = .publication
+        , modify = \f state -> { state | publication = f state.publication }
+        }
+    , postBody =
+        { get = .post >> Form.get .body
+        , modify = \f state -> { state | post = Form.modify .body f state.post }
+        }
+    , questionTitle =
+        { get = .question >> Form.get .title
+        , modify = \f state -> { state | question = Form.modify .title f state.question }
+        }
+    , questionBody =
+        { get = .question >> Form.get .body
+        , modify = \f state -> { state | question = Form.modify .body f state.question }
+        }
     }
 
 
