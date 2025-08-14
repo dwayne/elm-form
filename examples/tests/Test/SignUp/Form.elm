@@ -2,7 +2,7 @@ module Test.SignUp.Form exposing (suite)
 
 import Expect
 import Field.Advanced as Field
-import Form
+import Form3 as Form
 import SignUp.Email as Email
 import SignUp.Form as SignUp
 import SignUp.Password as Password
@@ -22,32 +22,28 @@ suite =
             , test "username is empty" <|
                 \_ ->
                     SignUp.form
-                        |> Form.toState
-                        |> .username
+                        |> Form.get .username
                         |> Field.toRawString
                         |> String.isEmpty
                         |> Expect.equal True
             , test "email is empty" <|
                 \_ ->
                     SignUp.form
-                        |> Form.toState
-                        |> .email
+                        |> Form.get .email
                         |> Field.toRawString
                         |> String.isEmpty
                         |> Expect.equal True
             , test "password is empty" <|
                 \_ ->
                     SignUp.form
-                        |> Form.toState
-                        |> .password
+                        |> Form.get .password
                         |> Field.toRawString
                         |> String.isEmpty
                         |> Expect.equal True
             , test "password confirmation is empty" <|
                 \_ ->
                     SignUp.form
-                        |> Form.toState
-                        |> .passwordConfirmation
+                        |> Form.get .passwordConfirmation
                         |> Field.toRawString
                         |> String.isEmpty
                         |> Expect.equal True
@@ -56,10 +52,10 @@ suite =
             let
                 validForm =
                     SignUp.form
-                        |> Form.update .setUsername "freddy"
-                        |> Form.update .setEmail "freddy.mercury@queen.com"
-                        |> Form.update .setPassword "12345678aB!"
-                        |> Form.update .setPasswordConfirmation "12345678aB!"
+                        |> Form.modify .username (Field.setFromString "freddy")
+                        |> Form.modify .email (Field.setFromString "freddy.mercury@queen.com")
+                        |> Form.modify .password (Field.setFromString "12345678aB!")
+                        |> Form.modify .passwordConfirmation (Field.setFromString "12345678aB!")
             in
             [ test "it is valid" <|
                 \_ ->
@@ -89,11 +85,11 @@ suite =
             let
                 invalidForm =
                     SignUp.form
-                        |> Form.update .setUsername "freddy"
-                        |> Form.update .setEmail "freddy.mercury@queen.com"
-                        |> Form.update .setPassword "12345678aB!"
-                        |> Form.update .setPasswordConfirmation "12345678aB!"
-                        |> Form.update .setPassword "12345678aB!x"
+                        |> Form.modify .username (Field.setFromString "freddy")
+                        |> Form.modify .email (Field.setFromString "freddy.mercury@queen.com")
+                        |> Form.modify .password (Field.setFromString "12345678aB!")
+                        |> Form.modify .passwordConfirmation (Field.setFromString "12345678aB!")
+                        |> Form.modify .password (Field.setFromString "12345678aB!x")
             in
             [ test "it is invalid" <|
                 \_ ->

@@ -2,7 +2,7 @@ module SignUp.SimpleView exposing (main)
 
 import Browser as B
 import Field.Advanced as Field
-import Form
+import Form3 as Form
 import Html as H
 import Html.Attributes as HA
 import Html.Events as HE
@@ -65,22 +65,22 @@ update msg model =
             ( model, Cmd.none )
 
         InputUsername s ->
-            ( { model | signUp = Form.update .setUsername s model.signUp }
+            ( { model | signUp = Form.modify .username (Field.setFromString s) model.signUp }
             , Cmd.none
             )
 
         InputEmail s ->
-            ( { model | signUp = Form.update .setEmail s model.signUp }
+            ( { model | signUp = Form.modify .email (Field.setFromString s) model.signUp }
             , Cmd.none
             )
 
         InputPassword s ->
-            ( { model | signUp = Form.update .setPassword s model.signUp }
+            ( { model | signUp = Form.modify .password (Field.setFromString s) model.signUp }
             , Cmd.none
             )
 
         InputPasswordConfirmation s ->
-            ( { model | signUp = Form.update .setPasswordConfirmation s model.signUp }
+            ( { model | signUp = Form.modify .passwordConfirmation (Field.setFromString s) model.signUp }
             , Cmd.none
             )
 
@@ -101,10 +101,6 @@ focusUsername =
 
 view : Model -> H.Html Msg
 view { signUp, maybeOutput } =
-    let
-        state =
-            Form.toState signUp
-    in
     viewCenter
         [ H.h1 [ HA.class "title is-1" ] [ H.text "Sign Up" ]
         , H.form
@@ -116,7 +112,7 @@ view { signUp, maybeOutput } =
                 { id = "username"
                 , label = "Username"
                 , tipe = Lib.Bulma.Input.Text
-                , field = state.username
+                , field = Form.get .username signUp
                 , errorToString = Error.usernameErrorToString
                 , isRequired = True
                 , isDisabled = False
@@ -127,7 +123,7 @@ view { signUp, maybeOutput } =
                 { id = "email"
                 , label = "Email"
                 , tipe = Lib.Bulma.Input.Email
-                , field = state.email
+                , field = Form.get .email signUp
                 , errorToString = Error.emailErrorToString
                 , isRequired = True
                 , isDisabled = False
@@ -138,7 +134,7 @@ view { signUp, maybeOutput } =
                 { id = "password"
                 , label = "Password"
                 , tipe = Lib.Bulma.Input.Password
-                , field = state.password
+                , field = Form.get .password signUp
                 , errorToString = Error.passwordErrorToString
                 , isRequired = True
                 , isDisabled = False
@@ -149,7 +145,7 @@ view { signUp, maybeOutput } =
                 { id = "passwordConfirmation"
                 , label = "Password Confirmation"
                 , tipe = Lib.Bulma.Input.Password
-                , field = state.passwordConfirmation
+                , field = Form.get .passwordConfirmation signUp
                 , errorToString = Error.passwordConfirmationErrorToString
                 , isRequired = True
                 , isDisabled = False
