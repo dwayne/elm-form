@@ -33,8 +33,15 @@ type alias State =
 
 type alias Modifiers =
     { setPublication : Publication -> State -> State
-    , setPost : Post.Form -> State -> State
-    , setQuestion : Question.Form -> State -> State
+
+    --
+    -- setPost and setQuestion work quite nicely because all their modifiers take the same shape and types.
+    --
+    -- What happens if that's not the case? For e.g. How would we nest this form itself?
+    -- My approach to nesting clearly works on a case-by-case basis.
+    --
+    , setPost : ( Post.Modifiers -> String -> Post.State -> Post.State, String ) -> State -> State
+    , setQuestion : ( Question.Modifiers -> String -> Question.State -> Question.State, String ) -> State -> State
     }
 
 
@@ -80,11 +87,11 @@ modifiers =
         \publication state ->
             { state | publication = Field.setFromValue publication state.publication }
     , setPost =
-        \post state ->
-            { state | post = post }
+        \( f, x ) state ->
+            { state | post = Form.update f x state.post }
     , setQuestion =
-        \question state ->
-            { state | question = question }
+        \( f, x ) state ->
+            { state | question = Form.update f x state.question }
     }
 
 

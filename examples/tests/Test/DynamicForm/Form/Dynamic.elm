@@ -32,11 +32,6 @@ suite =
                 form =
                     Dynamic.form
                         |> Form.update .setPublication Publication.Post
-
-                post =
-                    form
-                        |> Form.toState
-                        |> .post
             in
             [ test "it is invalid" <|
                 \_ ->
@@ -55,7 +50,7 @@ suite =
             , test "when post body has less than 10 characters" <|
                 \_ ->
                     form
-                        |> Form.update .setPost (Form.update .setBody "Hello" post)
+                        |> Form.update .setPost ( .setBody, "Hello" )
                         |> Form.toState
                         |> .post
                         |> Form.toState
@@ -65,7 +60,7 @@ suite =
             , fuzz (Fuzz.oneOfValues [ String.repeat 10 "a", String.repeat 10 "ab" ]) "when post body has 10 characters or more" <|
                 \b ->
                     form
-                        |> Form.update .setPost (Form.update .setBody b post)
+                        |> Form.update .setPost ( .setBody, b )
                         |> Form.validateAsMaybe
                         |> Maybe.map
                             (\output ->
@@ -88,11 +83,6 @@ suite =
                 form =
                     Dynamic.form
                         |> Form.update .setPublication Publication.Question
-
-                question =
-                    form
-                        |> Form.toState
-                        |> .question
             in
             [ test "it is invalid" <|
                 \_ ->
@@ -120,7 +110,7 @@ suite =
             , test "when question title has less than 10 characters" <|
                 \_ ->
                     form
-                        |> Form.update .setQuestion (Form.update .setTitle "A title" question)
+                        |> Form.update .setQuestion ( .setTitle, "A title" )
                         |> Form.toState
                         |> .question
                         |> Form.toState
@@ -130,7 +120,7 @@ suite =
             , test "when question body has less than 100 characters" <|
                 \_ ->
                     form
-                        |> Form.update .setQuestion (Form.update .setBody "A body" question)
+                        |> Form.update .setQuestion ( .setBody, "A body" )
                         |> Form.toState
                         |> .question
                         |> Form.toState
@@ -140,7 +130,7 @@ suite =
             , fuzz (Fuzz.oneOfValues [ String.repeat 10 "a", String.repeat 10 "ab" ]) "when question title has 10 characters or more" <|
                 \t ->
                     form
-                        |> Form.update .setQuestion (Form.update .setTitle t question)
+                        |> Form.update .setQuestion ( .setTitle, t )
                         |> Form.validateAsMaybe
                         |> Maybe.map
                             (\output ->
@@ -168,17 +158,8 @@ suite =
               <|
                 \t b ->
                     form
-                        |> Form.update .setQuestion (Form.update .setTitle t question)
-                        |> (\newForm ->
-                                let
-                                    newQuestion =
-                                        newForm
-                                            |> Form.toState
-                                            |> .question
-                                in
-                                newForm
-                                    |> Form.update .setQuestion (Form.update .setBody b newQuestion)
-                           )
+                        |> Form.update .setQuestion ( .setTitle, t )
+                        |> Form.update .setQuestion ( .setBody, b )
                         |> Form.validateAsMaybe
                         |> Maybe.map
                             (\output ->

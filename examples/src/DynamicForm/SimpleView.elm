@@ -71,35 +71,17 @@ update msg model =
             )
 
         InputPostBody s ->
-            let
-                post =
-                    model.dynamic
-                        |> Form.toState
-                        |> .post
-            in
-            ( { model | dynamic = Form.update .setPost (Form.update .setBody s post) model.dynamic }
+            ( { model | dynamic = Form.update .setPost ( .setBody, s ) model.dynamic }
             , Cmd.none
             )
 
         InputQuestionTitle s ->
-            let
-                question =
-                    model.dynamic
-                        |> Form.toState
-                        |> .question
-            in
-            ( { model | dynamic = Form.update .setQuestion (Form.update .setTitle s question) model.dynamic }
+            ( { model | dynamic = Form.update .setQuestion ( .setTitle, s ) model.dynamic }
             , Cmd.none
             )
 
         InputQuestionBody s ->
-            let
-                question =
-                    model.dynamic
-                        |> Form.toState
-                        |> .question
-            in
-            ( { model | dynamic = Form.update .setQuestion (Form.update .setBody s question) model.dynamic }
+            ( { model | dynamic = Form.update .setQuestion ( .setBody, s ) model.dynamic }
             , Cmd.none
             )
 
