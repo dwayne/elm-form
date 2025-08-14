@@ -1,10 +1,10 @@
 module Form exposing
-    ( Config
-    , Form
+    ( Form
+    , Options
     , isInvalid
     , isValid
     , new
-    , toFields
+    , toState
     , update
     , validate
     , validateAsMaybe
@@ -14,57 +14,87 @@ module Form exposing
 import Validation as V exposing (Validation)
 
 
-type Form fields setters error output
+type Form state modifiers error output
     = Form
-        { config : Config fields setters error output
-        , fields : fields
+        { config : Config state modifiers error output
+        , state : state
         }
 
 
-type alias Config fields setters error output =
-    { setters : setters
-    , validate : fields -> Validation error output
+type alias Config state modifiers error output =
+    { modifiers : modifiers
+    , validate : state -> Validation error output
     }
 
 
-new : Config fields setters error output -> fields -> Form fields setters error output
-new config fields =
+
+-- CONSTRUCT
+
+
+type alias Options state modifiers error output =
+    { init : state
+    , modifiers : modifiers
+    , validate : state -> Validation error output
+    }
+
+
+new : Options state modifiers error output -> Form state modifiers error output
+new options =
     Form
-        { config = config
-        , fields = fields
+        { config =
+            { modifiers = options.modifiers
+            , validate = options.validate
+            }
+        , state = options.init
         }
 
 
-update : (setters -> a -> fields -> fields) -> a -> Form fields setters error output -> Form fields setters error output
+
+-- MODIFY
+
+
+update : (modifiers -> a -> state -> state) -> a -> Form state modifiers error output -> Form state modifiers error output
 update f x (Form form) =
-    Form { form | fields = f form.config.setters x form.fields }
+    Form { form | state = f form.config.modifiers x form.state }
 
 
-isValid : Form fields setters error output -> Bool
+
+-- QUERY
+
+
+isValid : Form state modifiers error output -> Bool
 isValid =
     validate >> V.isValid
 
 
-isInvalid : Form fields setters error output -> Bool
+isInvalid : Form state modifiers error output -> Bool
 isInvalid =
     not << isValid
 
 
-validate : Form fields setters error output -> Validation error output
-validate (Form { config, fields }) =
-    config.validate fields
+
+-- VALIDATE
 
 
-validateAsResult : Form fields setters error output -> Result (List error) output
+validate : Form state modifiers error output -> Validation error output
+validate (Form { config, state }) =
+    config.validate state
+
+
+validateAsResult : Form state modifiers error output -> Result (List error) output
 validateAsResult =
     validate >> V.toResult
 
 
-validateAsMaybe : Form fields setters error output -> Maybe output
+validateAsMaybe : Form state modifiers error output -> Maybe output
 validateAsMaybe =
     validate >> V.toMaybe
 
 
-toFields : Form fields setters error output -> fields
-toFields (Form { fields }) =
-    fields
+
+-- CONVERT
+
+
+toState : Form state modifiers error output -> state
+toState (Form { state }) =
+    state

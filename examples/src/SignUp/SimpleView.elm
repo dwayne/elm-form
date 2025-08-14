@@ -102,8 +102,8 @@ focusUsername =
 view : Model -> H.Html Msg
 view { signUp, maybeOutput } =
     let
-        fields =
-            Form.toFields signUp
+        state =
+            Form.toState signUp
     in
     viewCenter
         [ H.h1 [ HA.class "title is-1" ] [ H.text "Sign Up" ]
@@ -116,7 +116,7 @@ view { signUp, maybeOutput } =
                 { id = "username"
                 , label = "Username"
                 , tipe = Lib.Bulma.Input.Text
-                , field = fields.username
+                , field = state.username
                 , errorToString = Error.usernameErrorToString
                 , isRequired = True
                 , isDisabled = False
@@ -127,7 +127,7 @@ view { signUp, maybeOutput } =
                 { id = "email"
                 , label = "Email"
                 , tipe = Lib.Bulma.Input.Email
-                , field = fields.email
+                , field = state.email
                 , errorToString = Error.emailErrorToString
                 , isRequired = True
                 , isDisabled = False
@@ -138,7 +138,7 @@ view { signUp, maybeOutput } =
                 { id = "password"
                 , label = "Password"
                 , tipe = Lib.Bulma.Input.Password
-                , field = fields.password
+                , field = state.password
                 , errorToString = Error.passwordErrorToString
                 , isRequired = True
                 , isDisabled = False
@@ -149,7 +149,7 @@ view { signUp, maybeOutput } =
                 { id = "passwordConfirmation"
                 , label = "Password Confirmation"
                 , tipe = Lib.Bulma.Input.Password
-                , field = fields.passwordConfirmation
+                , field = state.passwordConfirmation
                 , errorToString = Error.passwordConfirmationErrorToString
                 , isRequired = True
                 , isDisabled = False

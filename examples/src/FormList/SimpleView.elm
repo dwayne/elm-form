@@ -118,8 +118,8 @@ focusName =
 view : Model -> H.Html Msg
 view { formList, maybeOutput } =
     let
-        fields =
-            Form.toFields formList
+        state =
+            Form.toState formList
     in
     viewCenter
         [ H.h1 [ HA.class "title is-1" ] [ H.text "Form List" ]
@@ -132,7 +132,7 @@ view { formList, maybeOutput } =
                 { id = "name"
                 , label = "Your name"
                 , tipe = Lib.Bulma.Input.Text
-                , field = fields.name
+                , field = state.name
                 , errorToString = Error.textErrorToString
                 , isRequired = True
                 , isDisabled = False
@@ -182,7 +182,7 @@ view { formList, maybeOutput } =
                             ]
                         )
                     )
-                    fields.websites
+                    state.websites
             , H.div [ HA.class "field" ]
                 [ H.button
                     [ HA.class "button is-text"

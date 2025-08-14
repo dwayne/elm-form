@@ -1,9 +1,9 @@
 module SignUp.Form exposing
     ( Error(..)
-    , Fields
     , Form
+    , Modifiers
     , Output
-    , Setters
+    , State
     , form
     )
 
@@ -20,10 +20,10 @@ import SignUp.Username as Username exposing (Username)
 
 
 type alias Form =
-    Form.Form Fields Setters Error Output
+    Form.Form State Modifiers Error Output
 
 
-type alias Fields =
+type alias State =
     { username : Field Username.Error Username
     , email : Field Email.Error Email
     , password : Field Password.Error Password
@@ -31,11 +31,11 @@ type alias Fields =
     }
 
 
-type alias Setters =
-    { setUsername : String -> Fields -> Fields
-    , setEmail : String -> Fields -> Fields
-    , setPassword : String -> Fields -> Fields
-    , setPasswordConfirmation : String -> Fields -> Fields
+type alias Modifiers =
+    { setUsername : String -> State -> State
+    , setEmail : String -> State -> State
+    , setPassword : String -> State -> State
+    , setPasswordConfirmation : String -> State -> State
     }
 
 
@@ -56,42 +56,51 @@ type alias Output =
 form : Form
 form =
     Form.new
-        { setters = setters
+        { init = init
+        , modifiers = modifiers
         , validate = validate
         }
-        { username = Field.empty Username.fieldType
-        , email = Field.empty Email.fieldType
-        , password = Field.empty Password.fieldType
-        , passwordConfirmation = Field.empty PasswordConfirmation.fieldType
-        }
 
 
 
--- SETTERS
+-- INIT
 
 
-setters : Setters
-setters =
+init : State
+init =
+    { username = Field.empty Username.fieldType
+    , email = Field.empty Email.fieldType
+    , password = Field.empty Password.fieldType
+    , passwordConfirmation = Field.empty PasswordConfirmation.fieldType
+    }
+
+
+
+-- MODIFIERS
+
+
+modifiers : Modifiers
+modifiers =
     { setUsername =
-        \s fields ->
-            { fields | username = Field.setFromString s fields.username }
+        \s state ->
+            { state | username = Field.setFromString s state.username }
     , setEmail =
-        \s fields ->
-            { fields | email = Field.setFromString s fields.email }
+        \s state ->
+            { state | email = Field.setFromString s state.email }
     , setPassword =
-        \s fields ->
+        \s state ->
             let
                 password =
-                    Field.setFromString s fields.password
+                    Field.setFromString s state.password
             in
-            { fields | password = password, passwordConfirmation = updatePasswordConfirmation password fields.passwordConfirmation }
+            { state | password = password, passwordConfirmation = updatePasswordConfirmation password state.passwordConfirmation }
     , setPasswordConfirmation =
-        \s fields ->
+        \s state ->
             let
                 passwordConfirmation =
-                    Field.setFromString s fields.passwordConfirmation
+                    Field.setFromString s state.passwordConfirmation
             in
-            { fields | passwordConfirmation = updatePasswordConfirmation fields.password passwordConfirmation }
+            { state | passwordConfirmation = updatePasswordConfirmation state.password passwordConfirmation }
     }
 
 
@@ -117,13 +126,13 @@ updatePasswordConfirmation password passwordConfirmation =
 -- VALIDATE
 
 
-validate : Fields -> Validation Error Output
-validate fields =
+validate : State -> Validation Error Output
+validate state =
     (\username email password _ ->
         Output username email password
     )
         |> Field.succeed
-        |> Field.applyValidation (fields.username |> Field.mapError UsernameError)
-        |> Field.applyValidation (fields.email |> Field.mapError EmailError)
-        |> Field.applyValidation (fields.password |> Field.mapError PasswordError)
-        |> Field.applyValidation (fields.passwordConfirmation |> Field.mapError PasswordConfirmationError)
+        |> Field.applyValidation (state.username |> Field.mapError UsernameError)
+        |> Field.applyValidation (state.email |> Field.mapError EmailError)
+        |> Field.applyValidation (state.password |> Field.mapError PasswordError)
+        |> Field.applyValidation (state.passwordConfirmation |> Field.mapError PasswordConfirmationError)

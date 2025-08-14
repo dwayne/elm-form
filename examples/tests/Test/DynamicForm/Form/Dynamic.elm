@@ -22,7 +22,7 @@ suite =
             , test "publication is blank" <|
                 \_ ->
                     Dynamic.form
-                        |> Form.toFields
+                        |> Form.toState
                         |> .publication
                         |> Field.allErrors
                         |> Expect.equal [ Field.blankError ]
@@ -35,7 +35,7 @@ suite =
 
                 post =
                     form
-                        |> Form.toFields
+                        |> Form.toState
                         |> .post
             in
             [ test "it is invalid" <|
@@ -46,9 +46,9 @@ suite =
             , test "when post body is blank" <|
                 \_ ->
                     form
-                        |> Form.toFields
+                        |> Form.toState
                         |> .post
-                        |> Form.toFields
+                        |> Form.toState
                         |> .body
                         |> Field.allErrors
                         |> Expect.equal [ Field.blankError ]
@@ -56,9 +56,9 @@ suite =
                 \_ ->
                     form
                         |> Form.update .setPost (Form.update .setBody "Hello" post)
-                        |> Form.toFields
+                        |> Form.toState
                         |> .post
-                        |> Form.toFields
+                        |> Form.toState
                         |> .body
                         |> Field.allErrors
                         |> Expect.equal [ Field.customError (Text.TooShort 10) ]
@@ -91,7 +91,7 @@ suite =
 
                 question =
                     form
-                        |> Form.toFields
+                        |> Form.toState
                         |> .question
             in
             [ test "it is invalid" <|
@@ -102,18 +102,18 @@ suite =
             , test "when question title is blank" <|
                 \_ ->
                     form
-                        |> Form.toFields
+                        |> Form.toState
                         |> .question
-                        |> Form.toFields
+                        |> Form.toState
                         |> .title
                         |> Field.allErrors
                         |> Expect.equal [ Field.blankError ]
             , test "when question body is blank" <|
                 \_ ->
                     form
-                        |> Form.toFields
+                        |> Form.toState
                         |> .question
-                        |> Form.toFields
+                        |> Form.toState
                         |> .body
                         |> Field.allErrors
                         |> Expect.equal []
@@ -121,9 +121,9 @@ suite =
                 \_ ->
                     form
                         |> Form.update .setQuestion (Form.update .setTitle "A title" question)
-                        |> Form.toFields
+                        |> Form.toState
                         |> .question
-                        |> Form.toFields
+                        |> Form.toState
                         |> .title
                         |> Field.allErrors
                         |> Expect.equal [ Field.customError (Text.TooShort 10) ]
@@ -131,9 +131,9 @@ suite =
                 \_ ->
                     form
                         |> Form.update .setQuestion (Form.update .setBody "A body" question)
-                        |> Form.toFields
+                        |> Form.toState
                         |> .question
-                        |> Form.toFields
+                        |> Form.toState
                         |> .body
                         |> Field.allErrors
                         |> Expect.equal [ Field.customError (Text.TooShort 100) ]
@@ -173,7 +173,7 @@ suite =
                                 let
                                     newQuestion =
                                         newForm
-                                            |> Form.toFields
+                                            |> Form.toState
                                             |> .question
                                 in
                                 newForm

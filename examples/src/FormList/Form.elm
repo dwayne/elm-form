@@ -1,11 +1,11 @@
 module FormList.Form exposing
     ( Error
-    , Fields
     , Form
+    , Modifiers
     , Output
-    , Setters
+    , State
     , Website
-    , WebsiteFields
+    , WebsiteState
     , form
     )
 
@@ -20,28 +20,28 @@ import Validation as V exposing (Validation)
 
 
 type alias Form =
-    Form.Form Fields Setters Error Output
+    Form.Form State Modifiers Error Output
 
 
-type alias Fields =
+type alias State =
     { name : Field Text.Error Text
-    , websites : List WebsiteFields
+    , websites : List WebsiteState
     }
 
 
-type alias WebsiteFields =
+type alias WebsiteState =
     { id : Int
     , name : Field Text.Error Text
     , address : Field Text.Error Text
     }
 
 
-type alias Setters =
-    { setName : String -> Fields -> Fields
-    , setWebsiteName : ( Int, String ) -> Fields -> Fields
-    , setWebsiteAddress : ( Int, String ) -> Fields -> Fields
-    , addWebsite : Int -> Fields -> Fields
-    , removeWebsite : Int -> Fields -> Fields
+type alias Modifiers =
+    { setName : String -> State -> State
+    , setWebsiteName : ( Int, String ) -> State -> State
+    , setWebsiteAddress : ( Int, String ) -> State -> State
+    , addWebsite : Int -> State -> State
+    , removeWebsite : Int -> State -> State
     }
 
 
@@ -66,31 +66,40 @@ type alias Website =
 form : Int -> Form
 form id =
     Form.new
-        { setters = setters
+        { init = init id
+        , modifiers = modifiers
         , validate = validate
         }
-        { name = Field.empty (Text.fieldType 2)
-        , websites =
-            [ { id = id
-              , name = Field.fromString (Text.fieldType 1) "Elm"
-              , address = Field.fromString (Text.fieldType 1) "https://elm-lang.org/"
-              }
-            ]
-        }
 
 
 
--- SETTERS
+-- INIT
 
 
-setters : Setters
-setters =
+init : Int -> State
+init id =
+    { name = Field.empty (Text.fieldType 2)
+    , websites =
+        [ { id = id
+          , name = Field.fromString (Text.fieldType 1) "Elm"
+          , address = Field.fromString (Text.fieldType 1) "https://elm-lang.org/"
+          }
+        ]
+    }
+
+
+
+-- MODIFIERS
+
+
+modifiers : Modifiers
+modifiers =
     { setName =
-        \s fields ->
-            { fields | name = Field.setFromString s fields.name }
+        \s state ->
+            { state | name = Field.setFromString s state.name }
     , setWebsiteName =
-        \( id, s ) fields ->
-            { fields
+        \( id, s ) state ->
+            { state
                 | websites =
                     List.map
                         (\website ->
@@ -100,11 +109,11 @@ setters =
                             else
                                 website
                         )
-                        fields.websites
+                        state.websites
             }
     , setWebsiteAddress =
-        \( id, s ) fields ->
-            { fields
+        \( id, s ) state ->
+            { state
                 | websites =
                     List.map
                         (\website ->
@@ -114,13 +123,13 @@ setters =
                             else
                                 website
                         )
-                        fields.websites
+                        state.websites
             }
     , addWebsite =
-        \id fields ->
-            { fields
+        \id state ->
+            { state
                 | websites =
-                    fields.websites
+                    state.websites
                         ++ [ { id = id
                              , name = Field.empty (Text.fieldType 1)
                              , address = Field.fromString (Text.fieldType 1) "https://"
@@ -128,8 +137,8 @@ setters =
                            ]
             }
     , removeWebsite =
-        \id fields ->
-            { fields | websites = List.filter (.id >> (/=) id) fields.websites }
+        \id state ->
+            { state | websites = List.filter (.id >> (/=) id) state.websites }
     }
 
 
@@ -137,29 +146,29 @@ setters =
 -- VALIDATE
 
 
-validate : Fields -> Validation Error Output
-validate fields =
+validate : State -> Validation Error Output
+validate state =
     Field.succeed Output
-        |> Field.applyValidation (fields.name |> Field.mapError NameError)
-        |> V.apply (validateWebsites fields.websites)
+        |> Field.applyValidation (state.name |> Field.mapError NameError)
+        |> V.apply (validateWebsites state.websites)
 
 
-validateWebsites : List WebsiteFields -> Validation Error (List Website)
-validateWebsites fieldsList =
-    case fieldsList of
+validateWebsites : List WebsiteState -> Validation Error (List Website)
+validateWebsites stateList =
+    case stateList of
         [] ->
             V.succeed []
 
-        fields :: rest ->
+        state :: rest ->
             V.map2
                 (::)
-                (validateWebsiteFields fields)
+                (validateWebsiteState state)
                 (validateWebsites rest)
 
 
-validateWebsiteFields : WebsiteFields -> Validation Error Website
-validateWebsiteFields fields =
+validateWebsiteState : WebsiteState -> Validation Error Website
+validateWebsiteState state =
     Field.validate2
         Website
-        (fields.name |> Field.mapError WebsiteNameError)
-        (fields.address |> Field.mapError WebsiteAddressError)
+        (state.name |> Field.mapError WebsiteNameError)
+        (state.address |> Field.mapError WebsiteAddressError)

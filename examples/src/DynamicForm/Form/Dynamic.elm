@@ -1,9 +1,9 @@
 module DynamicForm.Form.Dynamic exposing
     ( Error
-    , Fields
     , Form
+    , Modifiers
     , Output(..)
-    , Setters
+    , State
     , form
     )
 
@@ -21,20 +21,20 @@ import Validation as V exposing (Validation)
 
 
 type alias Form =
-    Form.Form Fields Setters Error Output
+    Form.Form State Modifiers Error Output
 
 
-type alias Fields =
+type alias State =
     { publication : Field Publication.Error Publication
     , post : Post.Form
     , question : Question.Form
     }
 
 
-type alias Setters =
-    { setPublication : Publication -> Fields -> Fields
-    , setPost : Post.Form -> Fields -> Fields
-    , setQuestion : Question.Form -> Fields -> Fields
+type alias Modifiers =
+    { setPublication : Publication -> State -> State
+    , setPost : Post.Form -> State -> State
+    , setQuestion : Question.Form -> State -> State
     }
 
 
@@ -52,30 +52,39 @@ type Output
 form : Form
 form =
     Form.new
-        { setters = setters
+        { init = init
+        , modifiers = modifiers
         , validate = validate
         }
-        { publication = Field.empty Publication.fieldType
-        , post = Post.form
-        , question = Question.form
-        }
 
 
 
--- SETTERS
+-- INIT
 
 
-setters : Setters
-setters =
+init : State
+init =
+    { publication = Field.empty Publication.fieldType
+    , post = Post.form
+    , question = Question.form
+    }
+
+
+
+-- MODIFIERS
+
+
+modifiers : Modifiers
+modifiers =
     { setPublication =
-        \publication fields ->
-            { fields | publication = Field.setFromValue publication fields.publication }
+        \publication state ->
+            { state | publication = Field.setFromValue publication state.publication }
     , setPost =
-        \post fields ->
-            { fields | post = post }
+        \post state ->
+            { state | post = post }
     , setQuestion =
-        \question fields ->
-            { fields | question = question }
+        \question state ->
+            { state | question = question }
     }
 
 
@@ -83,21 +92,21 @@ setters =
 -- VALIDATE
 
 
-validate : Fields -> Validation Error Output
-validate fields =
-    fields.publication
+validate : State -> Validation Error Output
+validate state =
+    state.publication
         |> Field.mapError PublicationError
         |> Field.validate identity
         |> V.andThen
             (\publication ->
                 case publication of
                     Publication.Post ->
-                        Form.validate fields.post
+                        Form.validate state.post
                             |> V.mapError PostError
                             |> V.map PostOutput
 
                     Publication.Question ->
-                        Form.validate fields.question
+                        Form.validate state.question
                             |> V.mapError QuestionError
                             |> V.map QuestionOutput
             )

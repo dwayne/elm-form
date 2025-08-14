@@ -1,9 +1,9 @@
 module DynamicForm.Form.Question exposing
     ( Error
-    , Fields
     , Form
+    , Modifiers
     , Output
-    , Setters
+    , State
     , form
     )
 
@@ -17,18 +17,18 @@ import Form
 
 
 type alias Form =
-    Form.Form Fields Setters Error Output
+    Form.Form State Modifiers Error Output
 
 
-type alias Fields =
+type alias State =
     { title : Field Text.Error Text
     , body : Field Text.Error (Maybe Text)
     }
 
 
-type alias Setters =
-    { setTitle : String -> Fields -> Fields
-    , setBody : String -> Fields -> Fields
+type alias Modifiers =
+    { setTitle : String -> State -> State
+    , setBody : String -> State -> State
     }
 
 
@@ -46,26 +46,35 @@ type alias Output =
 form : Form
 form =
     Form.new
-        { setters = setters
+        { init = init
+        , modifiers = modifiers
         , validate = validate
         }
-        { title = Field.empty (Text.fieldType 10)
-        , body = Field.empty (Field.optional <| Text.fieldType 100)
-        }
 
 
 
--- SETTERS
+-- INIT
 
 
-setters : Setters
-setters =
+init : State
+init =
+    { title = Field.empty (Text.fieldType 10)
+    , body = Field.empty (Field.optional <| Text.fieldType 100)
+    }
+
+
+
+-- MODIFIERS
+
+
+modifiers : Modifiers
+modifiers =
     { setTitle =
-        \s fields ->
-            { fields | title = Field.setFromString s fields.title }
+        \s state ->
+            { state | title = Field.setFromString s state.title }
     , setBody =
-        \s fields ->
-            { fields | body = Field.setFromString s fields.body }
+        \s state ->
+            { state | body = Field.setFromString s state.body }
     }
 
 
@@ -73,9 +82,9 @@ setters =
 -- VALIDATE
 
 
-validate : Fields -> Validation Error Output
-validate fields =
+validate : State -> Validation Error Output
+validate state =
     Output
         |> Field.succeed
-        |> Field.applyValidation (fields.title |> Field.mapError TitleError)
-        |> Field.applyValidation (fields.body |> Field.mapError BodyError)
+        |> Field.applyValidation (state.title |> Field.mapError TitleError)
+        |> Field.applyValidation (state.body |> Field.mapError BodyError)

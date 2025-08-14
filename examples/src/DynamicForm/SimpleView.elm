@@ -74,7 +74,7 @@ update msg model =
             let
                 post =
                     model.dynamic
-                        |> Form.toFields
+                        |> Form.toState
                         |> .post
             in
             ( { model | dynamic = Form.update .setPost (Form.update .setBody s post) model.dynamic }
@@ -85,7 +85,7 @@ update msg model =
             let
                 question =
                     model.dynamic
-                        |> Form.toFields
+                        |> Form.toState
                         |> .question
             in
             ( { model | dynamic = Form.update .setQuestion (Form.update .setTitle s question) model.dynamic }
@@ -96,7 +96,7 @@ update msg model =
             let
                 question =
                     model.dynamic
-                        |> Form.toFields
+                        |> Form.toState
                         |> .question
             in
             ( { model | dynamic = Form.update .setQuestion (Form.update .setBody s question) model.dynamic }
@@ -121,8 +121,8 @@ focusPublication =
 view : Model -> H.Html Msg
 view { dynamic, maybeOutput } =
     let
-        fields =
-            Form.toFields dynamic
+        state =
+            Form.toState dynamic
     in
     viewCenter
         [ H.h1 [ HA.class "title is-1" ] [ H.text "Dynamic Form" ]
@@ -134,7 +134,7 @@ view { dynamic, maybeOutput } =
             [ Lib.Bulma.Select.view
                 { id = "publication"
                 , label = "Type of publication"
-                , field = fields.publication
+                , field = state.publication
                 , options =
                     ( Select.Label "-- Choose a type --"
                     , [ Publication.Post
@@ -156,11 +156,11 @@ view { dynamic, maybeOutput } =
                 , selectAttrs = [ HA.autofocus True ]
                 , optionAttrs = always []
                 }
-            , case Field.toMaybe fields.publication of
+            , case Field.toMaybe state.publication of
                 Just Publication.Post ->
                     let
                         postFields =
-                            Form.toFields fields.post
+                            Form.toState state.post
                     in
                     H.fieldset [ HA.class "block" ]
                         [ Lib.Bulma.Textarea.view
@@ -178,7 +178,7 @@ view { dynamic, maybeOutput } =
                 Just Publication.Question ->
                     let
                         questionFields =
-                            Form.toFields fields.question
+                            Form.toState state.question
                     in
                     H.fieldset [ HA.class "block" ]
                         [ Lib.Bulma.Input.view

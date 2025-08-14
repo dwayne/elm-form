@@ -22,7 +22,7 @@ suite =
             , test "username is empty" <|
                 \_ ->
                     SignUp.form
-                        |> Form.toFields
+                        |> Form.toState
                         |> .username
                         |> Field.toRawString
                         |> String.isEmpty
@@ -30,7 +30,7 @@ suite =
             , test "email is empty" <|
                 \_ ->
                     SignUp.form
-                        |> Form.toFields
+                        |> Form.toState
                         |> .email
                         |> Field.toRawString
                         |> String.isEmpty
@@ -38,7 +38,7 @@ suite =
             , test "password is empty" <|
                 \_ ->
                     SignUp.form
-                        |> Form.toFields
+                        |> Form.toState
                         |> .password
                         |> Field.toRawString
                         |> String.isEmpty
@@ -46,7 +46,7 @@ suite =
             , test "password confirmation is empty" <|
                 \_ ->
                     SignUp.form
-                        |> Form.toFields
+                        |> Form.toState
                         |> .passwordConfirmation
                         |> Field.toRawString
                         |> String.isEmpty
