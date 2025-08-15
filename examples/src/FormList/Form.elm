@@ -69,16 +69,6 @@ init =
     }
 
 
-emptyWebsiteName : Field Text.Error Text
-emptyWebsiteName =
-    Field.empty (Text.fieldType 1)
-
-
-emptyWebsiteAddress : Field Text.Error Text
-emptyWebsiteAddress =
-    Field.empty (Text.fieldType 1)
-
-
 
 -- ACCESSORS
 
@@ -102,6 +92,16 @@ accessors =
     , addWebsite = \state -> { state | websites = Form.List.append (Website.form "" "https://") state.websites }
     , removeWebsite = \id state -> { state | websites = Form.List.remove id state.websites }
     }
+
+
+emptyWebsiteName : Field Text.Error Text
+emptyWebsiteName =
+    Field.empty (Text.fieldType 1)
+
+
+emptyWebsiteAddress : Field Text.Error Text
+emptyWebsiteAddress =
+    Field.empty (Text.fieldType 1)
 
 
 
