@@ -54,10 +54,10 @@ init _ =
 type Msg
     = Focus
     | InputName String
-    | InputWebsiteName Form.List.Id String
-    | InputWebsiteAddress Form.List.Id String
+    | InputWebsiteName Int String
+    | InputWebsiteAddress Int String
     | ClickedAddWebsiteButton
-    | ClickedRemoveWebsiteButton Form.List.Id
+    | ClickedRemoveWebsiteButton Int
     | Submit
 
 
@@ -145,7 +145,7 @@ view { formList, maybeOutput } =
                         (\index ( id, website ) ->
                             let
                                 idAsString =
-                                    Form.List.idToString id
+                                    String.fromInt id
                             in
                             ( idAsString
                             , H.div [ HA.class "box" ]

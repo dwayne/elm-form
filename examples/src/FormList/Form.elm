@@ -31,10 +31,10 @@ type alias State =
 
 type alias Accessors =
     { name : Accessor State (Field Text.Error Text)
-    , websiteName : Form.List.Id -> Accessor State (Field Text.Error Text)
-    , websiteAddress : Form.List.Id -> Accessor State (Field Text.Error Text)
+    , websiteName : Int -> Accessor State (Field Text.Error Text)
+    , websiteAddress : Int -> Accessor State (Field Text.Error Text)
     , addWebsite : State -> State
-    , removeWebsite : Form.List.Id -> State -> State
+    , removeWebsite : Int -> State -> State
     }
 
 

@@ -1,11 +1,9 @@
 module Form.List exposing
     ( Forms
-    , Id
     , append
     , empty
     , fromList
     , get
-    , idToString
     , modify
     , prepend
     , remove
@@ -20,17 +18,8 @@ import Validation as V exposing (Validation)
 type Forms a
     = Forms
         { id : Int
-        , elements : List ( Id, a )
+        , elements : List ( Int, a )
         }
-
-
-type Id
-    = Id Int
-
-
-idToString : Id -> String
-idToString (Id id) =
-    String.fromInt id
 
 
 empty : Forms a
@@ -53,17 +42,17 @@ fromList list =
         }
 
 
-fromListHelper : Int -> List ( Id, a ) -> List a -> ( Int, List ( Id, a ) )
+fromListHelper : Int -> List ( Int, a ) -> List a -> ( Int, List ( Int, a ) )
 fromListHelper i elements list =
     case list of
         [] ->
             ( i, List.reverse elements )
 
         x :: xs ->
-            fromListHelper (i + 1) (( Id i, x ) :: elements) xs
+            fromListHelper (i + 1) (( i, x ) :: elements) xs
 
 
-get : Id -> (accessors -> Accessor state a) -> a -> Forms (Form state accessors error output) -> a
+get : Int -> (accessors -> Accessor state a) -> a -> Forms (Form state accessors error output) -> a
 get id toAccessor default (Forms { elements }) =
     elements
         |> List.filter (Tuple.first >> (==) id)
@@ -72,7 +61,7 @@ get id toAccessor default (Forms { elements }) =
         |> Maybe.withDefault default
 
 
-modify : Id -> (accessors -> Accessor state a) -> (a -> a) -> Forms (Form state accessors error output) -> Forms (Form state accessors error output)
+modify : Int -> (accessors -> Accessor state a) -> (a -> a) -> Forms (Form state accessors error output) -> Forms (Form state accessors error output)
 modify id toAccessor f (Forms c) =
     Forms
         { c
@@ -93,15 +82,15 @@ modify id toAccessor f (Forms c) =
 
 prepend : a -> Forms a -> Forms a
 prepend x (Forms c) =
-    Forms { c | id = c.id + 1, elements = ( Id c.id, x ) :: c.elements }
+    Forms { c | id = c.id + 1, elements = ( c.id, x ) :: c.elements }
 
 
 append : a -> Forms a -> Forms a
 append x (Forms c) =
-    Forms { c | id = c.id + 1, elements = c.elements ++ [ ( Id c.id, x ) ] }
+    Forms { c | id = c.id + 1, elements = c.elements ++ [ ( c.id, x ) ] }
 
 
-remove : Id -> Forms a -> Forms a
+remove : Int -> Forms a -> Forms a
 remove id (Forms c) =
     Forms { c | elements = List.filter (Tuple.first >> (/=) id) c.elements }
 
@@ -114,6 +103,6 @@ validate f (Forms c) =
         c.elements
 
 
-toList : Forms a -> List ( Id, a )
+toList : Forms a -> List ( Int, a )
 toList (Forms { elements }) =
     elements
