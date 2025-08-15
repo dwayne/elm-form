@@ -1,15 +1,14 @@
 module DynamicForm.Form.Post exposing
-    ( Error
+    ( Accessors
+    , Error
     , Form
-    , Modifiers
     , Output
-    , State
     , form
     )
 
 import Data.Text as Text exposing (Text)
 import Field.Advanced as Field exposing (Field, Validation)
-import Form
+import Form3 as Form exposing (Accessor)
 
 
 
@@ -17,7 +16,7 @@ import Form
 
 
 type alias Form =
-    Form.Form State Modifiers Error Output
+    Form.Form State Accessors Error Output
 
 
 type alias State =
@@ -25,8 +24,8 @@ type alias State =
     }
 
 
-type alias Modifiers =
-    { setBody : String -> State -> State
+type alias Accessors =
+    { body : Accessor State (Field Text.Error Text)
     }
 
 
@@ -43,7 +42,7 @@ form : Form
 form =
     Form.new
         { init = init
-        , modifiers = modifiers
+        , accessors = accessors
         , validate = validate
         }
 
@@ -59,14 +58,15 @@ init =
 
 
 
--- MODIFIERS
+-- ACCESSORS
 
 
-modifiers : Modifiers
-modifiers =
-    { setBody =
-        \s state ->
-            { state | body = Field.setFromString s state.body }
+accessors : Accessors
+accessors =
+    { body =
+        { get = .body
+        , modify = \f state -> { state | body = f state.body }
+        }
     }
 
 
