@@ -9,6 +9,7 @@ module FormList.Form exposing
 
 import Data.Text as Text exposing (Text)
 import Field.Advanced as Field exposing (Field)
+import Form.List exposing (Forms)
 import Form3 as Form exposing (Accessor)
 import FormList.Website as Website
 import Validation as V exposing (Validation)
@@ -23,18 +24,17 @@ type alias Form =
 
 
 type alias State =
-    { id : Int
-    , name : Field Text.Error Text
-    , websites : List ( Int, Website.Form )
+    { name : Field Text.Error Text
+    , websites : Forms Website.Form
     }
 
 
 type alias Accessors =
     { name : Accessor State (Field Text.Error Text)
-    , websiteName : Int -> Accessor State (Field Text.Error Text)
-    , websiteAddress : Int -> Accessor State (Field Text.Error Text)
+    , websiteName : Form.List.Id -> Accessor State (Field Text.Error Text)
+    , websiteAddress : Form.List.Id -> Accessor State (Field Text.Error Text)
     , addWebsite : State -> State
-    , removeWebsite : Int -> State -> State
+    , removeWebsite : Form.List.Id -> State -> State
     }
 
 
@@ -64,9 +64,8 @@ form =
 
 init : State
 init =
-    { id = 1
-    , name = Field.empty (Text.fieldType 2)
-    , websites = [ ( 0, Website.form "Elm" "https://elm-lang.org/" ) ]
+    { name = Field.empty (Text.fieldType 2)
+    , websites = Form.List.fromList [ Website.form "Elm" "https://elm-lang.org/" ]
     }
 
 
@@ -92,56 +91,16 @@ accessors =
         }
     , websiteName =
         \id ->
-            { get =
-                .websites
-                    >> List.filter (Tuple.first >> (==) id)
-                    >> List.head
-                    >> Maybe.map (Tuple.second >> Form.get .name)
-                    >> Maybe.withDefault emptyWebsiteName
-            , modify =
-                \f state ->
-                    { state
-                        | websites =
-                            List.map
-                                (\( currentId, website ) ->
-                                    ( currentId
-                                    , if currentId == id then
-                                        Form.modify .name f website
-
-                                      else
-                                        website
-                                    )
-                                )
-                                state.websites
-                    }
+            { get = .websites >> Form.List.get id .name emptyWebsiteName
+            , modify = \f state -> { state | websites = Form.List.modify id .name f state.websites }
             }
     , websiteAddress =
         \id ->
-            { get =
-                .websites
-                    >> List.filter (Tuple.first >> (==) id)
-                    >> List.head
-                    >> Maybe.map (Tuple.second >> Form.get .address)
-                    >> Maybe.withDefault emptyWebsiteAddress
-            , modify =
-                \f state ->
-                    { state
-                        | websites =
-                            List.map
-                                (\( currentId, website ) ->
-                                    ( currentId
-                                    , if currentId == id then
-                                        Form.modify .address f website
-
-                                      else
-                                        website
-                                    )
-                                )
-                                state.websites
-                    }
+            { get = .websites >> Form.List.get id .address emptyWebsiteAddress
+            , modify = \f state -> { state | websites = Form.List.modify id .address f state.websites }
             }
-    , addWebsite = \state -> { state | id = state.id + 1, websites = state.websites ++ [ ( state.id, Website.form "" "https://" ) ] }
-    , removeWebsite = \id state -> { state | websites = List.filter (Tuple.first >> (/=) id) state.websites }
+    , addWebsite = \state -> { state | websites = Form.List.append (Website.form "" "https://") state.websites }
+    , removeWebsite = \id state -> { state | websites = Form.List.remove id state.websites }
     }
 
 
@@ -153,11 +112,4 @@ validate : State -> Validation Error Output
 validate state =
     Field.succeed Output
         |> Field.applyValidation (state.name |> Field.mapError NameError)
-        |> V.apply (validateWebsites state.websites)
-
-
-validateWebsites : List ( Int, Website.Form ) -> Validation Error (List Website.Output)
-validateWebsites =
-    List.foldr
-        (\( _, website ) -> V.map2 (::) (Form.validate website |> V.mapError WebsiteError))
-        (V.succeed [])
+        |> V.apply (Form.List.validate WebsiteError state.websites)

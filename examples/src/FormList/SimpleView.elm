@@ -3,6 +3,7 @@ module FormList.SimpleView exposing (main)
 import Browser as B
 import Data.Text as Text
 import Field.Advanced as Field
+import Form.List
 import Form3 as Form
 import FormList.Error as Error
 import FormList.Form as FormList
@@ -53,10 +54,10 @@ init _ =
 type Msg
     = Focus
     | InputName String
-    | InputWebsiteName Int String
-    | InputWebsiteAddress Int String
+    | InputWebsiteName Form.List.Id String
+    | InputWebsiteAddress Form.List.Id String
     | ClickedAddWebsiteButton
-    | ClickedRemoveWebsiteButton Int
+    | ClickedRemoveWebsiteButton Form.List.Id
     | Submit
 
 
@@ -136,47 +137,50 @@ view { formList, maybeOutput } =
             , H.div [ HA.class "field" ]
                 [ H.strong [] [ H.text "Websites" ]
                 ]
-            , HK.node "div" [ HA.class "field" ] <|
-                List.indexedMap
-                    (\index ( id, website ) ->
-                        let
-                            idAsString =
-                                String.fromInt id
-                        in
-                        ( idAsString
-                        , H.div [ HA.class "box" ]
-                            [ H.button
-                                [ HA.class "delete"
-                                , HA.type_ "button"
-                                , HE.onClick (ClickedRemoveWebsiteButton id)
+            , HK.node "div"
+                [ HA.class "field" ]
+                (state.websites
+                    |> Form.List.toList
+                    |> List.indexedMap
+                        (\index ( id, website ) ->
+                            let
+                                idAsString =
+                                    Form.List.idToString id
+                            in
+                            ( idAsString
+                            , H.div [ HA.class "box" ]
+                                [ H.button
+                                    [ HA.class "delete"
+                                    , HA.type_ "button"
+                                    , HE.onClick (ClickedRemoveWebsiteButton id)
+                                    ]
+                                    []
+                                , Lib.Bulma.Input.view
+                                    { id = "website-name-" ++ idAsString
+                                    , label = "Name of website #" ++ String.fromInt (index + 1)
+                                    , tipe = Lib.Bulma.Input.Text
+                                    , field = Form.get .name website
+                                    , errorToString = Error.textErrorToString
+                                    , isRequired = True
+                                    , isDisabled = False
+                                    , onInput = InputWebsiteName id
+                                    , attrs = []
+                                    }
+                                , Lib.Bulma.Input.view
+                                    { id = "website-address-" ++ idAsString
+                                    , label = "Address of website #" ++ String.fromInt (index + 1)
+                                    , tipe = Lib.Bulma.Input.Text
+                                    , field = Form.get .address website
+                                    , errorToString = Error.textErrorToString
+                                    , isRequired = True
+                                    , isDisabled = False
+                                    , onInput = InputWebsiteAddress id
+                                    , attrs = [ HA.placeholder "https://..." ]
+                                    }
                                 ]
-                                []
-                            , Lib.Bulma.Input.view
-                                { id = "website-name-" ++ idAsString
-                                , label = "Name of website #" ++ String.fromInt (index + 1)
-                                , tipe = Lib.Bulma.Input.Text
-                                , field = Form.get .name website
-                                , errorToString = Error.textErrorToString
-                                , isRequired = True
-                                , isDisabled = False
-                                , onInput = InputWebsiteName id
-                                , attrs = []
-                                }
-                            , Lib.Bulma.Input.view
-                                { id = "website-address-" ++ idAsString
-                                , label = "Address of website #" ++ String.fromInt (index + 1)
-                                , tipe = Lib.Bulma.Input.Text
-                                , field = Form.get .address website
-                                , errorToString = Error.textErrorToString
-                                , isRequired = True
-                                , isDisabled = False
-                                , onInput = InputWebsiteAddress id
-                                , attrs = [ HA.placeholder "https://..." ]
-                                }
-                            ]
+                            )
                         )
-                    )
-                    state.websites
+                )
             , H.div [ HA.class "field" ]
                 [ H.button
                     [ HA.class "button is-text"
