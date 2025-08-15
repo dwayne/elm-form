@@ -2,13 +2,14 @@ module Form3 exposing
     ( Accessor
     , Form
     , Options
-    , compose
     , get
     , isInvalid
     , isValid
     , modify
     , new
     , set
+    , toState
+    , update
     , validate
     , validateAsMaybe
     , validateAsResult
@@ -55,13 +56,6 @@ type alias Accessor s a =
     }
 
 
-compose : Accessor a b -> Accessor b c -> Accessor a c
-compose x y =
-    { get = x.get >> y.get
-    , modify = x.modify << y.modify
-    }
-
-
 
 -- GET
 
@@ -83,6 +77,11 @@ modify toAccessor t (Form form) =
 set : (accessors -> Accessor state a) -> a -> Form state accessors error output -> Form state accessors error output
 set toAccessor x =
     modify toAccessor (always x)
+
+
+update : (accessors -> state -> state) -> Form state accessors error output -> Form state accessors error output
+update f (Form form) =
+    Form { form | state = f form.accessors form.state }
 
 
 
@@ -116,3 +115,12 @@ validateAsResult =
 validateAsMaybe : Form state accessors error output -> Maybe output
 validateAsMaybe =
     validate >> V.toMaybe
+
+
+
+-- CONVERT
+
+
+toState : Form state accessors error output -> state
+toState (Form { state }) =
+    state
