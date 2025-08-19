@@ -10,7 +10,7 @@ module FormList.Form exposing
 import Data.Text as Text exposing (Text)
 import Field.Advanced as Field exposing (Field)
 import Form exposing (Accessor)
-import Form.List exposing (Forms)
+import Form.List exposing (Forms, Id)
 import FormList.Website as Website
 import Validation as V exposing (Validation)
 
@@ -31,16 +31,16 @@ type alias State =
 
 type alias Accessors =
     { name : Accessor State (Field Text.Error Text)
-    , websiteName : Int -> Accessor State (Field Text.Error Text)
-    , websiteAddress : Int -> Accessor State (Field Text.Error Text)
+    , websiteName : Id -> Accessor State (Field Text.Error Text)
+    , websiteAddress : Id -> Accessor State (Field Text.Error Text)
     , addWebsite : State -> State
-    , removeWebsite : Int -> State -> State
+    , removeWebsite : Id -> State -> State
     }
 
 
 type Error
     = NameError Text.Error
-    | WebsiteError Website.Error
+    | WebsiteError Id Website.Error
 
 
 type alias Output =

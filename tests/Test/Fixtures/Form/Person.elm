@@ -1,4 +1,4 @@
-module Test.Fixtures.Form.Name exposing
+module Test.Fixtures.Form.Person exposing
     ( Accessors
     , Error(..)
     , Form

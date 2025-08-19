@@ -4,46 +4,46 @@ import Expect
 import Field
 import Form
 import Test exposing (Test, describe, test)
-import Test.Fixtures.Form.Name as Name
+import Test.Fixtures.Form.Person as Person
 
 
 suite : Test
 suite =
     describe "Form"
-        [ nameFormSuite
+        [ personFormSuite
         ]
 
 
-nameFormSuite : Test
-nameFormSuite =
-    describe "Name Form"
+personFormSuite : Test
+personFormSuite =
+    describe "Person Form"
         [ describe "initial state"
             [ test "it is invalid" <|
                 \_ ->
-                    Name.form
+                    Person.form
                         |> Form.isInvalid
                         |> Expect.equal True
             , test "firstName is empty" <|
                 \_ ->
-                    Name.form
+                    Person.form
                         |> Form.get .firstName
                         |> Field.isEmpty
                         |> Expect.equal True
             , test "firstName is invalid" <|
                 \_ ->
-                    Name.form
+                    Person.form
                         |> Form.get .firstName
                         |> Field.isInvalid
                         |> Expect.equal True
             , test "lastName is empty" <|
                 \_ ->
-                    Name.form
+                    Person.form
                         |> Form.get .lastName
                         |> Field.isEmpty
                         |> Expect.equal True
             , test "lastName is valid" <|
                 \_ ->
-                    Name.form
+                    Person.form
                         |> Form.get .lastName
                         |> Field.isValid
                         |> Expect.equal True
@@ -51,16 +51,16 @@ nameFormSuite =
         , describe "when blank first name and blank last name" <|
             [ test "it is invalid" <|
                 \_ ->
-                    Name.form
+                    Person.form
                         |> Form.modify .firstName (Field.setFromString "   ")
                         |> Form.modify .lastName (Field.setFromString " \t ")
                         |> Form.validateAsResult
-                        |> Expect.equal (Err [ Name.FirstNameError Field.blankError ])
+                        |> Expect.equal (Err [ Person.FirstNameError Field.blankError ])
             ]
         , describe "with non-blank first name and blank last name"
             [ test "it is valid with the full name being the first name" <|
                 \_ ->
-                    Name.form
+                    Person.form
                         |> Form.modify .firstName (Field.setFromString "Dave")
                         |> Form.modify .lastName (Field.setFromString " \t ")
                         |> Form.validateAsMaybe
@@ -69,7 +69,7 @@ nameFormSuite =
         , describe "when non-blank first name and non-blank last name"
             [ test "it is valid with the full name being the first and last name" <|
                 \_ ->
-                    Name.form
+                    Person.form
                         |> Form.modify .firstName (Field.setFromString "Dave")
                         |> Form.modify .lastName (Field.setFromString "MacQueen")
                         |> Form.validateAsMaybe

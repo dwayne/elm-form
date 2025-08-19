@@ -210,22 +210,22 @@ remove id (Forms c) =
 
 
 {-| -}
-validate : (x -> y) -> Forms (Form state accessors x output) -> Validation y (List output)
+validate : (Id -> x -> y) -> Forms (Form state accessors x output) -> Validation y (List output)
 validate f (Forms c) =
     List.foldr
-        (\( _, form ) -> V.map2 (::) (Form.validate form |> V.mapError f))
+        (\( id, form ) -> V.map2 (::) (Form.validate form |> V.mapError (f id)))
         (V.succeed [])
         c.elements
 
 
 {-| -}
-validateAsMaybe : (x -> y) -> Forms (Form state accessors x output) -> Maybe (List output)
+validateAsMaybe : (Id -> x -> y) -> Forms (Form state accessors x output) -> Maybe (List output)
 validateAsMaybe f =
     validate f >> V.toMaybe
 
 
 {-| -}
-validateAsResult : (x -> y) -> Forms (Form state accessors x output) -> Result (List y) (List output)
+validateAsResult : (Id -> x -> y) -> Forms (Form state accessors x output) -> Result (List y) (List output)
 validateAsResult f =
     validate f >> V.toResult
 

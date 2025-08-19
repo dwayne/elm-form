@@ -4,7 +4,7 @@ import Browser as B
 import Data.Text as Text
 import Field.Advanced as Field
 import Form
-import Form.List
+import Form.List exposing (Id)
 import FormList.Error as Error
 import FormList.Form as FormList
 import Html as H
@@ -54,10 +54,10 @@ init _ =
 type Msg
     = Focus
     | InputName String
-    | InputWebsiteName Int String
-    | InputWebsiteAddress Int String
+    | InputWebsiteName Id String
+    | InputWebsiteAddress Id String
     | ClickedAddWebsiteButton
-    | ClickedRemoveWebsiteButton Int
+    | ClickedRemoveWebsiteButton Id
     | Submit
 
 
