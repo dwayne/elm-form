@@ -81,12 +81,12 @@ accessors =
         }
     , websiteName =
         \id ->
-            { get = .websites >> Form.List.get id .name emptyWebsiteName
+            { get = .websites >> Form.List.get id .name >> Maybe.withDefault emptyWebsiteName
             , modify = \f state -> { state | websites = Form.List.modify id .name f state.websites }
             }
     , websiteAddress =
         \id ->
-            { get = .websites >> Form.List.get id .address emptyWebsiteAddress
+            { get = .websites >> Form.List.get id .address >> Maybe.withDefault emptyWebsiteAddress
             , modify = \f state -> { state | websites = Form.List.modify id .address f state.websites }
             }
     , addWebsite = \state -> { state | websites = Form.List.append (Website.form "" "https://") state.websites }

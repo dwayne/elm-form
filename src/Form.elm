@@ -7,7 +7,7 @@ module Form exposing
     , toState
     )
 
-{-| It provides a way to package the fields, accessors, and business logic pertaining to a form behind a consistent interface.
+{-| Provides a way to package the fields, accessors, and business logic pertaining to a form behind a consistent interface.
 
 
 # Form

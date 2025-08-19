@@ -1,18 +1,18 @@
 module Form.List exposing
-    ( Forms
+    ( Forms, Id
     , empty, fromList
-    , get, modify
+    , get, set, modify, update
     , prepend, append, remove
-    , validate
+    , validate, validateAsMaybe, validateAsResult
     , toList
     )
 
-{-|
+{-| Provides a way to manage an ordered list of uniquely identifiable forms.
 
 
 # Forms
 
-@docs Forms
+@docs Forms, Id
 
 
 # Construct
@@ -22,7 +22,7 @@ module Form.List exposing
 
 # Accessors
 
-@docs get, modify
+@docs get, set, modify, update
 
 
 # Change
@@ -32,7 +32,7 @@ module Form.List exposing
 
 # Validate
 
-@docs validate
+@docs validate, validateAsMaybe, validateAsResult
 
 
 # Convert
@@ -49,20 +49,28 @@ import Validation as V exposing (Validation)
 -- FORMS
 
 
-{-| -}
-type Forms a
+{-| An ordered list of uniquely identifiable forms. The identifiers are automatically assigned and managed.
+-}
+type Forms form
     = Forms
-        { id : Int
-        , elements : List ( Int, a )
+        { id : Id
+        , elements : List ( Id, form )
         }
+
+
+{-| An identifier is represented by a non-negative integer.
+-}
+type alias Id =
+    Int
 
 
 
 -- CONSTRUCT
 
 
-{-| -}
-empty : Forms a
+{-| Create an empty list of forms.
+-}
+empty : Forms form
 empty =
     Forms
         { id = 0
@@ -70,8 +78,9 @@ empty =
         }
 
 
-{-| -}
-fromList : List a -> Forms a
+{-| Create an ordered list of uniquely identifiable forms derived from the given list of forms.
+-}
+fromList : List form -> Forms form
 fromList list =
     let
         ( id, elements ) =
@@ -83,28 +92,49 @@ fromList list =
         }
 
 
-fromListHelper : Int -> List ( Int, a ) -> List a -> ( Int, List ( Int, a ) )
-fromListHelper i elements list =
+fromListHelper : Id -> List ( Id, form ) -> List form -> ( Id, List ( Id, form ) )
+fromListHelper id elements list =
     case list of
         [] ->
-            ( i, List.reverse elements )
+            ( id, List.reverse elements )
 
         x :: xs ->
-            fromListHelper (i + 1) (( i, x ) :: elements) xs
+            fromListHelper (id + 1) (( id, x ) :: elements) xs
 
 
-{-| -}
-get : Int -> (accessors -> Accessor state a) -> a -> Forms (Form state accessors error output) -> a
-get id toAccessor default (Forms { elements }) =
+
+-- ACCESSORS
+
+
+{-| Get the value of a property associated with the form identified by the given identifier.
+
+If the form with the given identifier cannot be found then `Nothing` is returned.
+
+-}
+get : Id -> (accessors -> Accessor state a) -> Forms (Form state accessors error output) -> Maybe a
+get id toAccessor (Forms { elements }) =
     elements
         |> List.filter (Tuple.first >> (==) id)
         |> List.head
         |> Maybe.map (Tuple.second >> Form.get toAccessor)
-        |> Maybe.withDefault default
 
 
-{-| -}
-modify : Int -> (accessors -> Accessor state a) -> (a -> a) -> Forms (Form state accessors error output) -> Forms (Form state accessors error output)
+{-| Set the value of a property associated with the form identified by the given identifier.
+
+If the form with the given identifier cannot be found then no change is made.
+
+-}
+set : Id -> (accessors -> Accessor state a) -> a -> Forms (Form state accessors error output) -> Forms (Form state accessors error output)
+set id toAccessor x =
+    modify id toAccessor (always x)
+
+
+{-| Modify the value of a property associated with the form identified by the given identifier.
+
+If the form with the given identifier cannot be found then no change is made.
+
+-}
+modify : Id -> (accessors -> Accessor state a) -> (a -> a) -> Forms (Form state accessors error output) -> Forms (Form state accessors error output)
 modify id toAccessor f (Forms c) =
     Forms
         { c
@@ -123,24 +153,54 @@ modify id toAccessor f (Forms c) =
         }
 
 
+{-| Update the value of a property associated with the form identified by the given identifier.
+
+If the form with the given identifier cannot be found then no change is made.
+
+-}
+update : Id -> (accessors -> state -> state) -> Forms (Form state accessors error output) -> Forms (Form state accessors error output)
+update id f (Forms c) =
+    Forms
+        { c
+            | elements =
+                List.map
+                    (\( currentId, element ) ->
+                        ( currentId
+                        , if currentId == id then
+                            Form.update f element
+
+                          else
+                            element
+                        )
+                    )
+                    c.elements
+        }
+
+
 
 -- CHANGE
 
 
-{-| -}
-prepend : a -> Forms a -> Forms a
+{-| Add a form to the start of the list.
+-}
+prepend : form -> Forms form -> Forms form
 prepend x (Forms c) =
     Forms { c | id = c.id + 1, elements = ( c.id, x ) :: c.elements }
 
 
-{-| -}
-append : a -> Forms a -> Forms a
+{-| Add a form to the end of the list.
+-}
+append : form -> Forms form -> Forms form
 append x (Forms c) =
     Forms { c | id = c.id + 1, elements = c.elements ++ [ ( c.id, x ) ] }
 
 
-{-| -}
-remove : Int -> Forms a -> Forms a
+{-| Remove the form identified by the given identifier.
+
+If the form with the given identifier cannot be found then no change is made.
+
+-}
+remove : Id -> Forms form -> Forms form
 remove id (Forms c) =
     Forms { c | elements = List.filter (Tuple.first >> (/=) id) c.elements }
 
@@ -158,14 +218,23 @@ validate f (Forms c) =
         c.elements
 
 
+{-| -}
+validateAsMaybe : (x -> y) -> Forms (Form state accessors x output) -> Maybe (List output)
+validateAsMaybe f =
+    validate f >> V.toMaybe
 
---
--- What about validateResult and validateMaybe?
---
+
+{-| -}
+validateAsResult : (x -> y) -> Forms (Form state accessors x output) -> Result (List y) (List output)
+validateAsResult f =
+    validate f >> V.toResult
+
+
+
 -- CONVERT
 
 
 {-| -}
-toList : Forms a -> List ( Int, a )
+toList : Forms form -> List ( Id, form )
 toList (Forms { elements }) =
     elements
