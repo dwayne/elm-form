@@ -1,4 +1,4 @@
-module Test.Fixtures.Form.Group exposing
+module Group exposing
     ( Accessors
     , Error
     , Form
@@ -10,7 +10,7 @@ module Test.Fixtures.Form.Group exposing
 import Field exposing (Field)
 import Form exposing (Accessor)
 import Form.List exposing (Forms, Id)
-import Test.Fixtures.Form.Person as Person
+import Person
 import Validation as V exposing (Validation)
 
 

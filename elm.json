@@ -1,7 +1,7 @@
 {
     "type": "package",
     "name": "dwayne/elm-form",
-    "summary": "TODO: Add a summary",
+    "summary": "Model the non-UI related aspects of a form via a consistent interface",
     "license": "BSD-3-Clause",
     "version": "1.0.0",
     "exposed-modules": [
